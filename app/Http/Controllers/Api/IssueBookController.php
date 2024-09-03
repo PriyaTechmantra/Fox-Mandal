@@ -9,6 +9,8 @@ use App\Models\Book;
 use App\Models\BookTransfer;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
+use App\Models\User;
+use App\Notifications\BookReturnedNotification;
 
 class IssueBookController extends Controller
 {
@@ -102,10 +104,17 @@ class IssueBookController extends Controller
             'return_date' => Carbon::now()->toDateString(), 
         ]);
 
+        $admin = User::find(3); // Assuming admin ID is 3
+        if ($admin) {
+            $admin->notify(new BookReturnedNotification($issueBook));
+            $notifications = $admin->notifications;
+            $unreadNotifications = $admin->unreadNotifications;
+        }
         return response()->json([
             'message' => 'Book return status updated successfully.',
             'data' => $issueBook,
-            'shelve_data'=>$bookshelf
+            'shelve_data'=>$bookshelf,
+            'notifications'=>$notifications
         ]);
     }
 
