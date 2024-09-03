@@ -12,7 +12,7 @@ class BookmarkController extends Controller
     public function index(Request $request)
     {
         $wishlists = Bookmark::where('user_id', $request->user_id)->with('book')->get();
-        return response()->json(['message' => 'Bookmark list', 'data' => $wishlists], 200);
+        return response()->json(['message' => 'Bookmark list', 'data' => $wishlists  ], 200);
     }
 
 

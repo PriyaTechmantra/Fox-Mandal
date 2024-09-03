@@ -15,39 +15,11 @@ class IssueBookController extends Controller
     public function store(Request $request)
     {
 
-        // $validated = $request->validate([
-        //     'book_id' => 'required|array',
-        //     'request_date' => 'required|date',
-        //     'approve_date' => 'nullable|date',
-        // ]);
-
-        // $bookIds = $request->book_id; 
-        // foreach ($bookIds as $bookId) {
-        // $data = IssueBook::create([
-        //         'user_id' => $request->user_id,
-        //         'book_id' => $bookId,
-        //         'request_date' => $request->request_date,
-        //         'status' => $request->status,
-        //         // Uncomment and use the status field if needed
-        //         // 'status' => $validated['status'],
-        //         'approve_date' => $request->approve_date,
-        //     ]);
-        //     $insertedData[] = $data;
-        // }
-
-  
-        // return response()->json([
-        //     'message' => 'Books issued successfully.',
-        //    'data'=>$insertedData
-        // ]);
-
-
-        // Validate the input data
+       
         $validated = $request->validate([
             'book_id' => 'required|array',
             'user_id' => 'required', 
             'request_date' => 'required',
-            //  'approve_date' => 'nullable',
         ]);
 
         $insertedData = [];
@@ -59,7 +31,6 @@ class IssueBookController extends Controller
                     'user_id' => $validated['user_id'],
                     'book_id' => $bookId,
                     'request_date' => $validated['request_date'],
-                    // 'approve_date' => $validated['approve_date'],
                 ]);
                 $insertedData[] = $data;
             }
@@ -99,14 +70,10 @@ class IssueBookController extends Controller
             'qrcode' => 'required|string',          
             'user_id' => 'required',          
             'book_id' => 'required|integer|exists:books,id', 
-            // 'number' =>'required',
-            // 'area' =>'required',
-            // 'approve_date' =>'required',    
+            
         ]);
 
         $bookshelf = Bookshelve::where('qrcode', $validated['qrcode'])
-        // ->where('number', $validated['number'])
-        //    -> where('area', $validated['area'])
         ->first();
 
         if (!$bookshelf) {
@@ -124,7 +91,6 @@ class IssueBookController extends Controller
         $issueBook = IssueBook::where([
             'book_id' => $book->id, 
             'user_id' => $request->user_id,
-            // 'approve_date' => $request->approve_date,
         ])->first();
 
         if (!$issueBook) {

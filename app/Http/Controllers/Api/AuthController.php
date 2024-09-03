@@ -22,8 +22,6 @@ class AuthController extends Controller
         }
 
         $phoneNumber = $request->mobile;
-        $otp = rand(100000, 999999); // Generate a 6-digit OTP
-        // $expiresAt = Carbon::now()->addMinutes(10); // OTP valid for 10 minutes
 
         $user = User::where('mobile', $phoneNumber)->first();
 
@@ -31,13 +29,10 @@ class AuthController extends Controller
             return response()->json(['error' => 'User not found'], 404);
         }
 
-        // Update OTP and expiration
         $user->update([
             'otp' => $otp,
         ]);
 
-        // Here you should send OTP to the user's phone number
-        // For this example, we'll just return the OTP in the response for testing purposes
         return response()->json(['message' => 'OTP sent successfully', 
         'otp' => $otp,
         'name'=> $user->name,
@@ -62,7 +57,6 @@ class AuthController extends Controller
 
         $user = User::where('mobile', $phoneNumber)
                     ->where('otp', $otp)
-                    // ->where('otp_expires_at', '>', Carbon::now())
                     ->first();
         if ($user) {
             
@@ -70,7 +64,6 @@ class AuthController extends Controller
             return response()->json(['message' => 'OTP verified successfully'], 200);
         }
 
-        // return response()->json(['error' => 'Invalid or expired OTP'], 400);
     }
 
 }

@@ -27,15 +27,7 @@ class BookController extends Controller
 
         return response()->json(['message' => 'Detail of book',$books], 200);
     }
-    // public function store(Request $request)
-    // {
-  
-    //     $query = $request->input('query');
-
-    //     $books = Book::get();
-
-    //     return response()->json(['message' => 'List of book',$books], 200);
-    // }
+   
     public function search(Request $request)
     {
   
@@ -47,7 +39,6 @@ class BookController extends Controller
             ->orWhere('uid', 'LIKE', "%{$query}%")
             ->get();
 
-        // return response()->json($books);
         return response()->json(['message' => 'List of search data',$books], 200);
     }
 
@@ -59,7 +50,6 @@ class BookController extends Controller
         $book = Book::where('qrcode', $qrcode)
             ->first();
 
-        // return response()->json($books);
         return response()->json([
                                     'message' => 'Details of book by Qr-Code',
                                     'data' =>$book
@@ -68,51 +58,16 @@ class BookController extends Controller
     public function CategoryWiseBookList(Request $request)
     {
   
-        // $qrcode = $request->input('qrcode');
 
         $book = Book::where('category_id', $request->category_id)
             ->get();
 
-        // return response()->json($books);
         return response()->json([
                                     'message' => 'Book list by category wise',
                                     'data' =>$book
                                 ], 200);
     }
 
-    // public function showBooksByBookShelveQRCode(Request $request)
-    // {
-    //     // Find the bookshelf by its QR code
-    //     $bookshelve = Bookshelve::where('qrcode', $request->qrcode)->first();
-
-    //     // Check if the bookshelf exists
-    //     if (!$bookshelve) {
-    //         return response()->json(['message' => 'Bookshelf not found'], 404);
-    //     }
-
-    //     // Retrieve the books related to the found bookshelf
-    //     $books = $bookshelve->books;
-
-    //     // Format and return the book details as a JSON response
-    //     return response()->json([
-    //         // 'bookshelve' => [
-    //         //     'id' => $bookshelve->id,
-    //         //     'qrcode' => $bookshelve->qrcode,
-    //         //     // 'location' => $bookshelve->location,
-    //         //     // 'description' => $bookshelve->description,
-    //         // ],
-    //         'books' => $books->map(function ($book) {
-    //             return [
-    //                 'data'=>$book
-    //                 // 'title' => $book->title,
-    //                 // 'author' => $book->author,
-    //                 // 'publisher' => $book->publisher,
-    //                 // 'edition' => $book->edition,
-    //                 // 'quantity' => $book->quantity,
-    //             ];
-    //         }),
-    //     ]);
-    // }
     public function showBooksByBookShelveQRCode(Request $request)
     {
         // Find the bookshelf by its QR code
@@ -172,14 +127,6 @@ class BookController extends Controller
             })
         ],200);
 
-       
-
-        // $books = Book::where('bookshelves_id', $request->bookshelves_id)->get();
-
-        // return response()->json([
-        //             'message' => 'Book list by shelve wise',
-        //             'data'=> $books
-        // ],200);
     }
 
 
