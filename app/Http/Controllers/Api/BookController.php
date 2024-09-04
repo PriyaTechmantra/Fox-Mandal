@@ -18,7 +18,17 @@ class BookController extends Controller
 
         $books = Book::get();
 
-        return response()->json(['message' => 'List of book',$books], 200);
+        return response()->json(['message' => 'List of book','data' => $books], 200);
+    }
+
+    public function bookWithIssuedBook(Request $request)
+    {
+  
+        $query = $request->input('query');
+
+        $books = Book::with('issuebook')->get();
+
+        return response()->json(['message' => 'List of book','data' => $books], 200);
     }
     public function bookDetails(Request $request)
     {

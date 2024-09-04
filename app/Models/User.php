@@ -23,6 +23,7 @@ class User extends Authenticatable
         'mobile',
         'otp',
         'password',
+        'fcm_token',
     ];
 
     /**

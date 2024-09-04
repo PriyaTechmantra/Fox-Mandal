@@ -21,7 +21,7 @@ class IssueBookController extends Controller
         $validated = $request->validate([
             'book_id' => 'required|array',
             'user_id' => 'required', 
-            'request_date' => 'required',
+            // 'request_date' => 'required',
         ]);
 
         $insertedData = [];
@@ -32,7 +32,7 @@ class IssueBookController extends Controller
                 $data = IssueBook::create([
                     'user_id' => $validated['user_id'],
                     'book_id' => $bookId,
-                    'request_date' => $validated['request_date'],
+                    'request_date' => now()->toDateString(),
                 ]);
                 $insertedData[] = $data;
             }
@@ -54,7 +54,7 @@ class IssueBookController extends Controller
   
         $userId = $request->input('user_id');
 
-        $books = IssueBook::where('user_id', $userId)
+        $books = IssueBook::where('user_id', $userId)->with('book')
             ->get();
 
        
@@ -64,7 +64,47 @@ class IssueBookController extends Controller
                                 ], 200);
     }
 
-    
+    public function issuedBookListByUser(Request $request)
+    {
+      
+        $issuedBooks = IssueBook::where('user_id', $request['user_id'])
+            ->where('status', 1)
+            ->with('book') 
+            ->orderBy('approve_date', 'desc')
+            ->get();
+
+        if ($issuedBooks->isEmpty()) {
+            return response()->json([
+                'message' => 'No issued books found for this user.',
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Issued books retrieved successfully.',
+            'issued_books' => $issuedBooks,
+        ], 200);
+    }
+
+    public function requestedBookListByUser(Request $request)
+    {
+        $issuedBooks = IssueBook::where('user_id', $request['user_id'])
+            ->whereNull('status')
+            ->with('book') 
+            ->orderBy('request_date', 'desc')
+            ->get();
+
+        if ($issuedBooks->isEmpty()) {
+            return response()->json([
+                'message' => 'No issued books found for this user.',
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Issued books retrieved successfully.',
+            'issued_books' => $issuedBooks,
+        ], 200);
+    }
+
     public function returnBook(Request $request)
     {
         
