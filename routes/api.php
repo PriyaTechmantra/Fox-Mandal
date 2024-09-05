@@ -58,4 +58,11 @@ Route::get('/books/detai-by-book-shelves', [BookController::class, 'showBooksByB
 Route::post('/save-fcm-token', [NotificationController::class, 'saveToken']);
 
 
+Route::post('/save-notification', [NotificationController::class, 'Notification']);
+Route::get('/notification-list-by-user', [NotificationController::class, 'notificationListByUser']);
+Route::post('/notification-read', [NotificationController::class, 'markAsRead']);
+
+
+
+
 

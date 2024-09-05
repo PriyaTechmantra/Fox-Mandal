@@ -144,7 +144,7 @@ class IssueBookController extends Controller
             'return_date' => Carbon::now()->toDateString(), 
         ]);
 
-        $admin = User::find(3); // Assuming admin ID is 3
+        $admin = User::find(3);
         if ($admin) {
             $admin->notify(new BookReturnedNotification($issueBook));
             $notifications = $admin->notifications;

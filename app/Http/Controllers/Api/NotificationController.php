@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\LmsNotification;
+use Illuminate\Validation\ValidationException;
 
 class NotificationController extends Controller
 {
@@ -26,43 +28,17 @@ class NotificationController extends Controller
     }
 
 
-    // public function sendPushNotification($fcmToken, $title, $body)
-    // {
-    //     $serverKey = 'YOUR_FIREBASE_SERVER_KEY'; // Replace with your FCM server key
-
-    //     $data = [
-    //         "registration_ids" => [$fcmToken], // or use "to" => $fcmToken for a single device
-    //         "notification" => [
-    //             "title" => $title,
-    //             "body" => $body,
-    //             "sound" => "default", // optional
-    //         ],
-    //     ];
-
-    //     $headers = [
-    //         'Authorization: key=' . $serverKey,
-    //         'Content-Type: application/json',
-    //     ];
-
-    //     $response = Http::withHeaders($headers)->post('https://fcm.googleapis.com/fcm/send', $data);
-
-    //     if ($response->successful()) {
-    //         return response()->json(['success' => 'Notification sent successfully']);
-    //     }
-
-    //     return response()->json(['error' => 'Failed to send notification'], 500);
-    // }
-
+   
     public function sendPushNotification($fcmToken, $title, $body)
     {
-        $serverKey = 'YOUR_FIREBASE_SERVER_KEY'; // Replace with your actual Firebase server key
+        $serverKey = 'YOUR_FIREBASE_SERVER_KEY'; 
     
         $data = [
-            "to" => $fcmToken, // Send to a single device
+            "to" => $fcmToken, 
             "notification" => [
                 "title" => $title,
                 "body" => $body,
-                "sound" => "default", // Optional: Play sound on notification
+                "sound" => "default", 
             ],
         ];
     
@@ -71,16 +47,71 @@ class NotificationController extends Controller
             'Content-Type: application/json',
         ];
     
-        // Send the POST request to Firebase FCM
         $response = Http::withHeaders($headers)->post('https://fcm.googleapis.com/fcm/send', $data);
     
         if ($response->failed()) {
-            // Handle notification failure if necessary
             Log::error('Failed to send notification', ['response' => $response->body()]);
         }
     }
-    
 
+    public function notification(Request $request)
+    {
+        $validated = $request->validate([
+            'book_id' => 'required',
+            'sender_id' => 'required|exists:users,id',
+            'receiver_id' => 'required|exists:users,id',
+            'message' => 'required|string|max:255',
+            'notification_type' => 'required|integer|in:1,2,3',
+        ]);
+
+       
+        $notification = LmsNotification::create([
+            'book_id' => $validated['book_id'],
+            'sender_id' => $validated['sender_id'],
+            'receiver_id' => $validated['receiver_id'],
+            'message' => $validated['message'],
+            'notification_type' => $validated['notification_type'],
+        ]);
+
+        return response()->json([
+            'message' => 'Notification created successfully',
+            'data' => $notification
+        ], 201);
+    }
+
+    public function notificationListByUser(Request $request)
+    {
+       
+        $userId = $request->input('receiver_id');
+
+        $books = LmsNotification::where('receiver_id', $userId)->with('book')
+            ->get();
+
+       
+        return response()->json([
+            'message' => 'List of book of user',
+            'data' =>$books
+        ], 200);
+    }
+
+    public function markAsRead(Request $request)
+{
+    $validated = $request->validate([
+        'id' => 'required|integer|exists:lms_notifications,id',
+    ]);
+
+    $id = $validated['id'];
+
+    $notification = LmsNotification::find($id);
+    if (!$notification) {
+        return response()->json(['message' => 'Notification not found'], 200);
+    }
+
+    $notification->is_read = true;
+    $notification->save();
+
+    return response()->json(['message' => 'Notification marked as read'], 200);
+}
 }
 
 

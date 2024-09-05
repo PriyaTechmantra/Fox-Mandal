@@ -14,26 +14,29 @@ class BookReturnedNotification extends Notification
     {
         $this->issueBook = $issueBook;
     }
-
-    // Specify the channels for notification
+    /** Specify the channels 
+     * for notification*/
     public function via($notifiable)
     {
         return ['broadcast', 'database'];
     }
-
-    // Prepare the data for broadcasting
+    /**Prepare the data 
+     * for broadcasting */ 
     public function toBroadcast($notifiable)
     {
         return new BroadcastMessage($this->notificationData());
     }
-
-    // Prepare the data for storing in the database
+    /**  Prepare the data 
+     * for storing 
+     * in the database*/
     public function toDatabase($notifiable)
     {
         return new DatabaseMessage($this->notificationData());
     }
-
-    // Common data structure for both broadcast and database notifications
+    /**Common data structure
+     *  for both broadcast 
+     * and database notifications */
+ 
     protected function notificationData()
     {
         return [
@@ -43,4 +46,5 @@ class BookReturnedNotification extends Notification
             'message' => 'A book has been returned.',
         ];
     }
+    
 }

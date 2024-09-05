@@ -28,7 +28,7 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
         }
-
+        $otp = random_int(1000, 9999);
         $user->update([
             'otp' => $otp,
         ]);

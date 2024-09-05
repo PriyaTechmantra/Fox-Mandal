@@ -38,26 +38,41 @@ class BookController extends Controller
         return response()->json(['message' => 'Detail of book',$books], 200);
     }
    
+
     public function search(Request $request)
-    {
-  
-        $query = $request->input('query');
+{
+    $title = $request->input('title');
+    $publisher = $request->input('publisher');
+    $author = $request->input('author');
+    $uid = $request->input('uid');
 
-        $books = Book::where('title', 'LIKE', "%{$query}%")
-            ->orWhere('publisher', 'LIKE', "%{$query}%")
-            ->orWhere('author', 'LIKE', "%{$query}%")
-            ->orWhere('uid', 'LIKE', "%{$query}%")
-            ->get();
+    $books = Book::query();
 
-        return response()->json(['message' => 'List of search data',$books], 200);
+    if ($title) {
+        $books->where('title', 'LIKE', "%{$title}%");
     }
+    if ($publisher) {
+        $books->where('publisher', 'LIKE', "%{$publisher}%");
+    }
+    if ($author) {
+        $books->where('author', 'LIKE', "%{$author}%");
+    }
+    if ($uid) {
+        $books->where('uid', 'LIKE', "%{$uid}%");
+    }
+
+    $books = $books->with('issuebook')->get();
+
+    return response()->json(['message' => 'List of search data', 'data' => $books], 200);
+}
+
 
     public function searchDetailsByQrCode(Request $request)
     {
   
         $qrcode = $request->input('qrcode');
 
-        $book = Book::where('qrcode', $qrcode)
+        $book = Book::where('qrcode', $qrcode)->with('category')->with('bookshelves')
             ->first();
 
         return response()->json([

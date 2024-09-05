@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\BookTransfer;
 use App\Models\User;
+use App\Models\LmcNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
@@ -109,7 +110,11 @@ class BookTransferController extends Controller
         $response = Http::withHeaders($headers)->post('https://fcm.googleapis.com/fcm/send', $data);
 
         if ($response->failed()) {
-            Log::error('Failed to send notification: ' . $response->body());
+            Log::error('Failed to send notification: ' . $response->body()); 
         }
+
+        
     }
+    
 }
+ 
