@@ -69,10 +69,11 @@ class IssueBookController extends Controller
       
         $issuedBooks = IssueBook::where('user_id', $request['user_id'])
             ->where('status', 1)
+            ->where('is_return', 0)
             ->with('book') 
             ->orderBy('approve_date', 'desc')
             ->get();
-
+            
         if ($issuedBooks->isEmpty()) {
             return response()->json([
                 'message' => 'No issued books found for this user.',

@@ -51,8 +51,8 @@ Route::get('/books-shelve/search-by-qrcode', [BookShelveController::class, 'sear
 Route::post('/bookmark', [BookmarkController::class, 'store']);
 Route::get('/bookmark/list', [BookmarkController::class, 'index']);
 
-Route::get('/books/detai-by-book-shelves-qrcode', [BookController::class, 'showBooksByBookShelveQRCode']);
-Route::get('/books/detai-by-book-shelves', [BookController::class, 'showBooksByBookShelve']);
+Route::get('/books/detail-by-book-shelves-qrcode', [BookController::class, 'showBooksByBookShelveQRCode']);
+Route::get('/books/detail-by-book-shelves', [BookController::class, 'showBooksByBookShelve']);
 
 
 Route::post('/save-fcm-token', [NotificationController::class, 'saveToken']);
