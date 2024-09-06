@@ -7,21 +7,28 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\LmsNotification;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Validator;
 
 class NotificationController extends Controller
 {
     public function saveToken(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'id' => 'required|integer',
             'fcm_token' => 'required|string',
         ]);
+
+       
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
 
         $user = User::find($request->id);
         if ($user) {
             $user->fcm_token = $request->fcm_token;
             $user->save();
-            return response()->json(['success' => 'Token saved successfully']);
+            return response()->json(['success' => 'Token saved successfully', 'status'=>true]);
         }
 
         return response()->json(['error' => 'User not found'], 404);
@@ -56,26 +63,31 @@ class NotificationController extends Controller
 
     public function notification(Request $request)
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'book_id' => 'required',
             'sender_id' => 'required|exists:users,id',
             'receiver_id' => 'required|exists:users,id',
             'message' => 'required|string|max:255',
             'notification_type' => 'required|integer|in:1,2,3',
         ]);
+       
 
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
        
         $notification = LmsNotification::create([
-            'book_id' => $validated['book_id'],
-            'sender_id' => $validated['sender_id'],
-            'receiver_id' => $validated['receiver_id'],
-            'message' => $validated['message'],
-            'notification_type' => $validated['notification_type'],
+            'book_id' => $request->book_id,
+            'sender_id' => $request->sender_id,
+            'receiver_id' => $request->receiver_id,
+            'message' => $request->message,
+            'notification_type' => $request->notification_type,
         ]);
 
         return response()->json([
             'message' => 'Notification created successfully',
-            'data' => $notification
+            'data' => $notification, 
+            'status'=>true
         ], 201);
     }
 
@@ -90,27 +102,32 @@ class NotificationController extends Controller
        
         return response()->json([
             'message' => 'List of book of user',
-            'data' =>$books
+            'data' =>$books, 
+            'status'=>true
         ], 200);
     }
 
     public function markAsRead(Request $request)
 {
-    $validated = $request->validate([
+    $validator = Validator::make($request->all(), [
         'id' => 'required|integer|exists:lms_notifications,id',
     ]);
 
-    $id = $validated['id'];
+    if ($validator->fails()) {
+        return response()->json(['error' => $validator->errors()], 400);
+    }
+
+    $id = $request->id;
 
     $notification = LmsNotification::find($id);
     if (!$notification) {
-        return response()->json(['message' => 'Notification not found'], 200);
+        return response()->json(['message' => 'Notification not found', 'status'=>true], 200);
     }
 
     $notification->is_read = true;
     $notification->save();
 
-    return response()->json(['message' => 'Notification marked as read'], 200);
+    return response()->json(['message' => 'Notification marked as read', 'status'=>true], 200);
 }
 }
 

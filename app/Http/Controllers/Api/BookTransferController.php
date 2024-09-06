@@ -10,26 +10,31 @@ use App\Models\LmcNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 
 
 class BookTransferController extends Controller
 {
     public function transferBook(Request $request)
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'book_id' => 'required', 
             'from_user_id' => 'required',
             'to_user_id' => 'required', 
         ]);
 
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
         DB::beginTransaction(); 
 
         try {
             $bookTransfer = BookTransfer::create([
-                'book_id' => $validated['book_id'],
+                'book_id' => $request->book_id,
                 'is_transfer' => 1,
-                'from_user_id' => $validated['from_user_id'],
-                'to_user_id' => $validated['to_user_id'],
+                'from_user_id' => $request->from_user_id,
+                'to_user_id' => $request->to_user_id,
                 'transfer_date' => now()->toDateString(),
             ]);
 
@@ -37,9 +42,9 @@ class BookTransferController extends Controller
                 'title' => 'Book Transfer Notification',
                 'body' => 'A book has been transferred from your account.',
                 'data' => [
-                    'book_id' => $validated['book_id'],
-                    'from_user_id' => $validated['from_user_id'],
-                    'to_user_id' => $validated['to_user_id'],
+                    'book_id' => $request->book_id,
+                    'from_user_id' => $request->from_user_id,
+                    'to_user_id' => $request->to_user_id,
                 ],
             ];
 
@@ -47,13 +52,13 @@ class BookTransferController extends Controller
                 'title' => 'Book Transfer Notification',
                 'body' => 'A book has been transferred to your account.',
                 'data' => [
-                    'book_id' => $validated['book_id'],
-                    'from_user_id' => $validated['from_user_id'],
-                    'to_user_id' => $validated['to_user_id'],
+                    'book_id' => $request->book_id,
+                    'from_user_id' => $request->from_user_id,
+                    'to_user_id' => $request->to_user_id,
                 ],
             ];
 
-            $fromUser = User::find($validated['from_user_id']);
+            $fromUser = User::find($request->from_user_id);
             if ($fromUser && $fromUser->fcm_token) {
                 $this->sendPushNotification(
                     $fromUser->fcm_token,
@@ -62,7 +67,7 @@ class BookTransferController extends Controller
                 );
             }
 
-            $toUser = User::find($validated['to_user_id']);
+            $toUser = User::find($request->to_user_id);
             if ($toUser && $toUser->fcm_token) {
                 $this->sendPushNotification(
                     $toUser->fcm_token,
@@ -76,7 +81,7 @@ class BookTransferController extends Controller
             return response()->json([
                 'message' => 'Book transfer status updated successfully.',
                 'data' => $bookTransfer,
-                'notification' => $notificationDataTo, 
+                'notification' => $notificationDataTo,  'status'=>true
             ], 201); 
 
         } catch (\Exception $e) {

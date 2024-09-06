@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Notifications\BookReturnedNotification;
+use Illuminate\Support\Facades\Validator;
 
 class IssueBookController extends Controller
 {
@@ -18,19 +19,26 @@ class IssueBookController extends Controller
     {
 
        
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'book_id' => 'required|array',
             'user_id' => 'required', 
             // 'request_date' => 'required',
         ]);
 
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
         $insertedData = [];
 
         try {
-            
-            foreach ($validated['book_id'] as $bookId) {
+            if($request->book_id){
+                
+            }
+            foreach ($request->book_id as $bookId) {
                 $data = IssueBook::create([
-                    'user_id' => $validated['user_id'],
+                    'user_id' => $request->user_id,
                     'book_id' => $bookId,
                     'request_date' => now()->toDateString(),
                 ]);
@@ -57,11 +65,16 @@ class IssueBookController extends Controller
         $books = IssueBook::where('user_id', $userId)->with('book')
             ->get();
 
-       
+        if ($books->isEmpty()) {
+            return response()->json([
+                'message' => 'No issued books found for this user.', 'status'=>false
+            ], 404);
+        }
         return response()->json([
-                                    'message' => 'List of book of user',
-                                    'data' =>$books
-                                ], 200);
+            'message' => 'List of book of user',
+            'data' =>$books,
+            'status'=>true
+        ], 200);
     }
 
     public function issuedBookListByUser(Request $request)
@@ -69,20 +82,21 @@ class IssueBookController extends Controller
       
         $issuedBooks = IssueBook::where('user_id', $request['user_id'])
             ->where('status', 1)
-            ->where('is_return', 0)
+            ->whereNull('is_return')
             ->with('book') 
             ->orderBy('approve_date', 'desc')
             ->get();
             
         if ($issuedBooks->isEmpty()) {
             return response()->json([
-                'message' => 'No issued books found for this user.',
+                'message' => 'No issued books found for this user.', 'status'=>false
             ], 404);
         }
 
         return response()->json([
-            'message' => 'Issued books retrieved successfully.',
+            'message' => 'Issued books list.',
             'issued_books' => $issuedBooks,
+            'status'=>true
         ], 200);
     }
 
@@ -102,21 +116,26 @@ class IssueBookController extends Controller
 
         return response()->json([
             'message' => 'Issued books retrieved successfully.',
-            'issued_books' => $issuedBooks,
+            'issued_books' => $issuedBooks, 'status'=>true
         ], 200);
     }
 
     public function returnBook(Request $request)
     {
         
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'qrcode' => 'required|string',          
             'user_id' => 'required',          
             'book_id' => 'required|integer|exists:books,id', 
             
         ]);
 
-        $bookshelf = Bookshelve::where('qrcode', $validated['qrcode'])
+       ;
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+        $bookshelf = Bookshelve::where('qrcode', $request->qrcode)
         ->first();
 
         if (!$bookshelf) {
@@ -124,7 +143,7 @@ class IssueBookController extends Controller
         }
 
         $book = Book::where('bookshelves_id', $bookshelf->id)
-                    ->where('id', $validated['book_id']) 
+                    ->where('id', $request->book_id) 
                     ->first();
 
         if (!$book) {
@@ -155,7 +174,8 @@ class IssueBookController extends Controller
             'message' => 'Book return status updated successfully.',
             'data' => $issueBook,
             'shelve_data'=>$bookshelf,
-            'notifications'=>$notifications
+            'notifications'=>$notifications,
+             'status'=>true
         ]);
     }
 
@@ -163,22 +183,28 @@ class IssueBookController extends Controller
     public function transferBook(Request $request)
     {
        
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'book_id' => 'required',
             'from_user_id' => 'required', 
             'to_user_id' => 'required',   
         ]);
+
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
    
         $data = BookTransfer::create([
             'is_transfer' => 1,
-            'from_user_id' => $validated['from_user_id'],
-            'to_user_id' => $validated['to_user_id'],
+            'from_user_id' => $request->from_user_id,
+            'to_user_id' => $request->to_user_id,
             'transfer_date' => now()->toDateString(),
         ]);
         
         return response()->json([
             'message' => 'Book transfer status updated successfully.',
-            'data' => $issueBook
+            'data' => $issueBook, 
+            'status'=>true
         ]);
     }
     
