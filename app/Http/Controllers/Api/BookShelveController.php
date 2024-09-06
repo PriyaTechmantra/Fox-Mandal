@@ -16,11 +16,17 @@ class BookShelveController extends Controller
 
         $book = Bookshelve::where('qrcode', $qrcode)
             ->get();
-
+        if($book->isEmpty()) {
+            return response()->json([
+                'message' => 'No data found for this qr-code.', 'status'=>false
+            ], 404);
+        }
         return response()->json([
             'message' => 'Book selves by QR-code',
             'data' =>$book, 
             'status'=>true
         ], 200);
+
+      
     }
 }

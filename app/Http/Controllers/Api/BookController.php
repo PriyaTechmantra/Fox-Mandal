@@ -10,12 +10,8 @@ use Illuminate\Support\Facades\Validator;
 
 class BookController extends Controller
 {
-    
-
     public function index(Request $request)
     {
-  
-
         $books = Book::get();
         if ($books) {
              return response()->json(['message' => 'List of book','data' => $books , 'status'=>true], 200);
@@ -25,7 +21,7 @@ class BookController extends Controller
                 'status' => false
             ], 401);
         }
-        }
+    }
 
     public function bookWithIssuedBook(Request $request)
     {
@@ -91,7 +87,11 @@ class BookController extends Controller
 
         $books = $books->with('issuebook')->get();
         if ($books) {
-        return response()->json(['message' => 'List of search data', 'data' => $books, 'status'=>true], 200);
+            return response()->json([
+                'message' => 'List of search data', 
+                'data' => $books, 
+                'status'=>true
+            ], 200);
         }else {
             return response()->json([
                 'message' => 'No data found',
@@ -167,34 +167,7 @@ class BookController extends Controller
         }
     }
 
-    // public function showBooksByBookShelve(Request $request)
-    // {
-    //     $bookshelve = Bookshelve::where('number', $request->number)->first();
-
-    //     if (!$bookshelve) {
-    //         return response()->json(['message' => 'Bookshelf not found','status'=>false], 404);
-    //     }
-
-    //     $books = $bookshelve->books()->get();
-    //     if ($books) {
-    //     return response()->json([
-            
-    //         'books' => $books->map(function ($book) {
-    //             return [
-    //                 'message' => 'Book list by shelve QR-code wise',
-    //                 'data'=> $book,
-    //                 'status'=>true
-    //             ];
-    //         })
-    //     ],200);
-    //     }else {
-    //         return response()->json([
-    //             'message' => 'Book not found',
-    //             'status' => false
-    //         ], 401);
-    //     }
-
-    // }
+   
     public function showBooksByBookShelve(Request $request)
     {
         $bookshelve = Bookshelve::where('number', $request->number)->first();

@@ -41,5 +41,12 @@ class BookmarkController extends Controller
             'book_id' => $request->book_id,
         ]);
         return response()->json(['message' => 'Book added to wishlist', 'wishlist' => $wishlist, 'status'=>true], 200);
+
+        if (!$wishlist) {
+            return response()->json([
+                'message' => 'Failed to book added to wishlist',
+                'status' => false
+            ], 500); 
+        }
     }
 }

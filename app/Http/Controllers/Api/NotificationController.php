@@ -18,19 +18,15 @@ class NotificationController extends Controller
             'fcm_token' => 'required|string',
         ]);
 
-       
-
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
-
         $user = User::find($request->id);
         if ($user) {
             $user->fcm_token = $request->fcm_token;
             $user->save();
             return response()->json(['success' => 'Token saved successfully', 'status'=>true]);
         }
-
         return response()->json(['error' => 'User not found'], 404);
     }
 
@@ -39,7 +35,6 @@ class NotificationController extends Controller
     public function sendPushNotification($fcmToken, $title, $body)
     {
         $serverKey = 'YOUR_FIREBASE_SERVER_KEY'; 
-    
         $data = [
             "to" => $fcmToken, 
             "notification" => [

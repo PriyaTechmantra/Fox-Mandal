@@ -206,6 +206,12 @@ class IssueBookController extends Controller
             'data' => $issueBook, 
             'status'=>true
         ]);
+        if (!$data) {
+            return response()->json([
+                'message' => 'Failed to book transfer status updated ',
+                'status' => false
+            ], 500); 
+        }
     }
     
     

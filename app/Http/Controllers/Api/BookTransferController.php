@@ -83,6 +83,12 @@ class BookTransferController extends Controller
                 'data' => $bookTransfer,
                 'notification' => $notificationDataTo,  'status'=>true
             ], 201); 
+            if (!$bookTransfer) {
+                return response()->json([
+                    'message' => 'Failed to book transfer status updated ',
+                    'status' => false
+                ], 500); 
+            }
 
         } catch (\Exception $e) {
             DB::rollBack(); 
