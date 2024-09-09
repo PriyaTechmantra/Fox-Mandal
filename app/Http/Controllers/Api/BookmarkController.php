@@ -40,7 +40,7 @@ class BookmarkController extends Controller
             'user_id' => $request->user_id,
             'book_id' => $request->book_id,
         ]);
-        return response()->json(['message' => 'Book added to wishlist', 'wishlist' => $wishlist, 'status'=>true], 200);
+        return response()->json(['message' => 'Book added to wishlist', 'wishlist' => $wishlist, 'status'=>true], 201);
 
         if (!$wishlist) {
             return response()->json([

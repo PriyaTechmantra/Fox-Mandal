@@ -181,7 +181,7 @@ class BookController extends Controller
             return response()->json([
                 'message' => 'Book not found',
                 'status' => false
-            ], 204);
+            ], 404);
         }
     }
 
@@ -209,7 +209,7 @@ class BookController extends Controller
             return response()->json([
                 'message' => 'Book not found',
                 'status' => false
-            ], 204);
+            ], 404);
         }
 
     }
