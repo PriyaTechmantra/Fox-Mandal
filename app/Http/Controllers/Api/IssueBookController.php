@@ -132,7 +132,6 @@ class IssueBookController extends Controller
             
         ]);
 
-       ;
 
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors(),'status' => false], 400);
@@ -178,7 +177,7 @@ class IssueBookController extends Controller
             'shelve_data'=>$bookshelf,
             'notifications'=>$notifications,
              'status'=>true
-        ]);
+        ],200);
     }
 
 
@@ -207,7 +206,7 @@ class IssueBookController extends Controller
             'message' => 'Book transfer status updated successfully.',
             'data' => $issueBook, 
             'status'=>true
-        ]);
+        ],200);
         if (!$data) {
             return response()->json([
                 'message' => 'Failed to book transfer status updated ',
