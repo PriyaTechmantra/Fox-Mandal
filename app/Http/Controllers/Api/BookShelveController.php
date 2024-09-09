@@ -22,9 +22,9 @@ class BookShelveController extends Controller
             ], 404);
         }
         return response()->json([
+            'status' => true,
             'message' => 'Book selves by QR-code',
-            'data' =>$book, 
-            'status'=>true
+            'data' =>$book
         ], 200);
 
       

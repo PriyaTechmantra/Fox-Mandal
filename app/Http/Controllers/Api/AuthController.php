@@ -20,8 +20,8 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'error' => $validator->errors(),
-                'status' => false
+                'status' => false,
+                'error' => $validator->errors()
             ], 400);
         }
         try {
@@ -31,8 +31,8 @@ class AuthController extends Controller
 
             if (!$user) {
                 return response()->json([
-                    'error' => 'User not found',
-                    'status' => false
+                    'status' => false,
+                    'error' => 'User not found'
                 ], 404);
             }
 
@@ -42,17 +42,17 @@ class AuthController extends Controller
 
             if (!$updateSuccessful) {
                 return response()->json([
-                    'message' => 'Failed to send OTP, please try again later',
-                    'status' => false
+                    'status' => false,
+                    'message' => 'Failed to send OTP, please try again later'
                 ], 500); 
             }
 
             return response()->json([
+                'status' => true,
                 'message' => 'OTP sent successfully',
                 'name' => $user->name,
                 'email' => $user->email,
-                'mobile' => $user->mobile,
-                'status' => true
+                'mobile' => $user->mobile
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack(); 
@@ -73,7 +73,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors(),'status' => false], 400);
+            return response()->json(['status' => false,'error' => $validator->errors()], 400);
         }
         try{
             $phoneNumber = $request->mobile;
@@ -83,12 +83,12 @@ class AuthController extends Controller
                         ->where('otp', $otp)
                         ->first();
             if ($user) {
-                return response()->json(['message' => 'OTP verified successfully',
-                'status'=>true], 200);
+                return response()->json(['status' => true,'message' => 'OTP verified successfully'], 200);
             }else {
                 return response()->json([
-                    'message' => 'Invalid OTP or mobile number',
-                    'status' => false
+                    'status' => false,
+                    'message' => 'Invalid OTP or mobile number'
+                    
                 ], 401);
             }
         } catch (\Exception $e) {

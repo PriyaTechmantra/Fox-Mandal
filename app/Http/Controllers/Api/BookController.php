@@ -14,11 +14,11 @@ class BookController extends Controller
     {
         $books = Book::get();
         if ($books) {
-             return response()->json(['message' => 'List of book','data' => $books , 'status'=>true], 200);
+             return response()->json(['status'=>true,'message' => 'List of book','data' => $books ], 200);
         }else {
             return response()->json([
-                'message' => 'Book list found',
-                'status' => false
+                'status' => false,
+                'message' => 'Book list found'
             ], 404);
         }
     }
@@ -27,11 +27,11 @@ class BookController extends Controller
     {
         $books = Book::with('issuebook')->get();
         if ($books) {
-            return response()->json(['message' => 'List of book with issue details','data' => $books, 'status'=>true], 200);
+            return response()->json(['status'=>true,'message' => 'List of book with issue details','data' => $books, ], 200);
         }else {
             return response()->json([
-                'message' => 'Book list found',
-                'status' => false
+                'status' => false,
+                'message' => 'Book list found'
             ], 404);
         }
     }
@@ -42,22 +42,22 @@ class BookController extends Controller
             $book = Book::findOrFail($request->id);
             if ($book) {
             return response()->json([
+                'status'=>true,
                 'message' => 'Detail of book',
-                'data' => $book,
-                'status' => true
+                'data' => $book
             ], 200);
             }else {
                 return response()->json([
-                    'message' => 'Details not found',
-                    'status' => false
+                    'status' => false,
+                    'message' => 'Details not found'
                 ], 404);
             }
             
         } catch (\Exception $e) {
             return response()->json([
+                'status' => false,
                 'message' => 'An error occurred while fetching the book details.',
-                'error' => $e->getMessage(),
-                'status' => false
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -89,14 +89,14 @@ class BookController extends Controller
             $books = $books->with('issuebook')->get();
             if ($books) {
                 return response()->json([
+                    'status'=>true,
                     'message' => 'List of search data', 
-                    'data' => $books, 
-                    'status'=>true
+                    'data' => $books
                 ], 200);
             }else {
                 return response()->json([
-                    'message' => 'No data found',
-                    'status' => false
+                    'status' => false,
+                    'message' => 'No data found'
                 ], 401);
             }
         } catch (\Exception $e) {
@@ -119,14 +119,14 @@ class BookController extends Controller
                 ->first();
             if ($book) {
                 return response()->json([
+                    'status'=>true,
                     'message' => 'Details of book by Qr-Code',
-                    'data' =>$book,
-                    'status' => true
+                    'data' =>$book
                 ], 200);
             }else {
                 return response()->json([
-                    'message' => 'Details not found',
-                    'status' => false
+                    'status' => false,
+                    'message' => 'Details not found'
                 ], 404);
             }
         } catch (\Exception $e) {
@@ -146,14 +146,14 @@ class BookController extends Controller
 
         if ($book->isNotEmpty()) {
             return response()->json([
+                'status'=>true,
                 'message' => 'Book list by category wise',
-                'data' =>$book,
-                'status'=>true
+                'data' =>$book
             ], 200);
         }else {
             return response()->json([
-                'message' => 'Book not found',
-                'status' => false
+                'status' => false,
+                'message' => 'Book not found'
             ], 404);
         }
     }
@@ -171,16 +171,17 @@ class BookController extends Controller
             return response()->json([
                 'books' => $books->map(function ($book) {
                     return [
+                        'status'=>true,
                         'message' => 'Book list by shelve QR-code wise',
-                        'data'=> $book,
-                        'status'=>true
+                        'data'=> $book
                     ];
                 })
             ],200);
         }else {
             return response()->json([
-                'message' => 'Book not found',
-                'status' => false
+                'status' => false,
+                'message' => 'Book not found'
+                
             ], 404);
         }
     }
@@ -197,8 +198,9 @@ class BookController extends Controller
         $books = $bookshelve->books()->get();
         if ($books) {
         return response()->json([
-            'message' => 'Book list by shelve QR-code wise', 
             'status'=>true,
+            'message' => 'Book list by shelve QR-code wise', 
+            
             'books' => $books->map(function ($book) {
                 return [
                     'data'=> $book,
@@ -207,8 +209,9 @@ class BookController extends Controller
         ],200);
         }else {
             return response()->json([
-                'message' => 'Book not found',
-                'status' => false
+                'status' => false,
+                'message' => 'Book not found'
+               
             ], 404);
         }
 

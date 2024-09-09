@@ -17,11 +17,12 @@ class BookmarkController extends Controller
         $wishlists = Bookmark::where('user_id', $request->user_id)->with('book')->get();
         if ($wishlists->isEmpty()) {
             return response()->json([
-                'message' => 'No bookmarks found for this user',
-                'status' => false
+                'status' => false,
+                'message' => 'No bookmarks found for this user'
+                
             ], 404);
         }
-        return response()->json(['message' => 'Bookmark list', 'data' => $wishlists ,'status' => true], 200);
+        return response()->json(['status'=>true,'message' => 'Bookmark list', 'data' => $wishlists ], 200);
     }
 
 
@@ -33,19 +34,20 @@ class BookmarkController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors(),'status' => false], 400);
+            return response()->json(['status' => false,'error' => $validator->errors()], 400);
         }
 
         $wishlist = Bookmark::create([
             'user_id' => $request->user_id,
             'book_id' => $request->book_id,
         ]);
-        return response()->json(['message' => 'Book added to wishlist', 'wishlist' => $wishlist, 'status'=>true], 201);
+        return response()->json([ 'status'=>true,'message' => 'Book added to wishlist', 'wishlist' => $wishlist], 201);
 
         if (!$wishlist) {
             return response()->json([
+                'status' => false,
                 'message' => 'Failed to book added to wishlist',
-                'status' => false
+                
             ], 500); 
         }
     }

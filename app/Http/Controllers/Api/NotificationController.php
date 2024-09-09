@@ -11,51 +11,10 @@ use Illuminate\Support\Facades\Validator;
 
 class NotificationController extends Controller
 {
-    public function saveToken(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'id' => 'required|integer',
-            'fcm_token' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors(),'status' => false], 400);
-        }
-        $user = User::find($request->id);
-        if ($user) {
-            $user->fcm_token = $request->fcm_token;
-            $user->save();
-            return response()->json(['success' => 'Token saved successfully', 'status'=>true],201);
-        }
-        return response()->json(['error' => 'User not found','status' => false], 404);
-    }
-
+   
 
    
-    public function sendPushNotification($fcmToken, $title, $body)
-    {
-        $serverKey = 'YOUR_FIREBASE_SERVER_KEY'; 
-        $data = [
-            "to" => $fcmToken, 
-            "notification" => [
-                "title" => $title,
-                "body" => $body,
-                "sound" => "default", 
-            ],
-        ];
-    
-        $headers = [
-            'Authorization: key=' . $serverKey,
-            'Content-Type: application/json',
-        ];
-    
-        $response = Http::withHeaders($headers)->post('https://fcm.googleapis.com/fcm/send', $data);
-    
-        if ($response->failed()) {
-            Log::error('Failed to send notification', ['response' => $response->body()]);
-        }
-    }
-
+   
     public function notification(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -83,8 +42,7 @@ class NotificationController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Notification created successfully',
-                'data' => $notification,
-                'status'=>true
+                'data' => $notification
             ],201);
     
         } catch (\Exception $e) {
@@ -105,12 +63,12 @@ class NotificationController extends Controller
             ->get();
 
         if (!$data) {
-            return response()->json(['message' => 'Notification not found', 'status'=>false], 404);
+            return response()->json(['status'=>false,'message' => 'Notification not found'], 404);
         }
         return response()->json([
+            'status'=>true,
             'message' => 'List of book of user',
-            'data' =>$data, 
-            'status'=>true
+            'data' =>$data
         ], 200);
     }
 
@@ -128,13 +86,13 @@ class NotificationController extends Controller
 
     $notification = LmsNotification::find($id);
     if (!$notification) {
-        return response()->json(['message' => 'Notification not found', 'status'=>false], 404);
+        return response()->json(['status'=>false,'message' => 'Notification not found'], 404);
     }
 
     $notification->is_read = true;
     $notification->save();
 
-    return response()->json(['message' => 'Notification marked as read', 'status'=>true], 200);
+    return response()->json(['status'=>true,'message' => 'Notification marked as read','data'=>$notification], 200);
 }
 }
 

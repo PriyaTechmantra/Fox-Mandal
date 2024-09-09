@@ -48,46 +48,20 @@ class BookTransferController extends Controller
                 ],
             ];
 
-            $notificationDataTo = [
-                'title' => 'Book Transfer Notification',
-                'body' => 'A book has been transferred to your account.',
-                'data' => [
-                    'book_id' => $request->book_id,
-                    'from_user_id' => $request->from_user_id,
-                    'to_user_id' => $request->to_user_id,
-                ],
-            ];
-
-            $fromUser = User::find($request->from_user_id);
-            if ($fromUser && $fromUser->fcm_token) {
-                $this->sendPushNotification(
-                    $fromUser->fcm_token,
-                    $notificationDataFrom['title'],
-                    $notificationDataFrom['body']
-                );
-            }
-
-            $toUser = User::find($request->to_user_id);
-            if ($toUser && $toUser->fcm_token) {
-                $this->sendPushNotification(
-                    $toUser->fcm_token,
-                    $notificationDataTo['title'],
-                    $notificationDataTo['body']
-                );
-            }
-
+           
             DB::commit(); 
 
             return response()->json([
+                'status'=>true,
                 'message' => 'Book transfer status updated successfully.',
                 'data' => $bookTransfer,
-                'notification' => $notificationDataTo,  
-                'status'=>true
+                
             ], 201); 
             if (!$bookTransfer) {
                 return response()->json([
+                    'status' => false,
                     'message' => 'Failed to book transfer status updated ',
-                    'status' => false
+                    
                 ], 500); 
             }
 
@@ -101,32 +75,7 @@ class BookTransferController extends Controller
         }
     }
 
-    private function sendPushNotification($fcmToken, $title, $body)
-    {
-        $serverKey = 'YOUR_FIREBASE_SERVER_KEY'; 
-
-        $data = [
-            "to" => $fcmToken,
-            "notification" => [
-                "title" => $title,
-                "body" => $body,
-                "sound" => "default",
-            ],
-        ];
-
-        $headers = [
-            'Authorization: key=' . $serverKey,
-            'Content-Type: application/json',
-        ];
-
-        $response = Http::withHeaders($headers)->post('https://fcm.googleapis.com/fcm/send', $data);
-
-        if ($response->failed()) {
-            Log::error('Failed to send notification: ' . $response->body()); 
-        }
-
-        
-    }
+    
     
 }
  

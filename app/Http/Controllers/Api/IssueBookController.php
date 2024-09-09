@@ -27,7 +27,7 @@ class IssueBookController extends Controller
 
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors(),'status' => false], 400);
+            return response()->json(['status' => false,'error' => $validator->errors()], 400);
         }
 
         $insertedData = [];
@@ -46,15 +46,15 @@ class IssueBookController extends Controller
             }
 
             return response()->json([
+                'status' => true,
                 'message' => 'Books issued successfully.',
-                'data' => $insertedData,
-                'status' => true
+                'data' => $insertedData
             ]);
         } catch (\Exception $e) {
             return response()->json([
+                'status' => false,
                 'message' => 'An error occurred while issuing books.',
-                'error' => $e->getMessage(),
-                'status' => false
+                'error' => $e->getMessage()
             ], 500);
         }
 
@@ -69,13 +69,14 @@ class IssueBookController extends Controller
 
         if ($books->isEmpty()) {
             return response()->json([
-                'message' => 'No issued books found for this user.', 'status'=>false
+                'status'=>false,
+                'message' => 'No issued books found for this user.'
             ], 404);
         }
         return response()->json([
+            'status'=>true,
             'message' => 'List of book of user',
-            'data' =>$books,
-            'status'=>true
+            'data' =>$books
         ], 200);
     }
 
@@ -91,14 +92,15 @@ class IssueBookController extends Controller
             
         if ($issuedBooks->isEmpty()) {
             return response()->json([
-                'message' => 'No issued books found for this user.', 'status'=>false
+                'status'=>false,
+                'message' => 'No issued books found for this user.'
             ], 404);
         }
 
         return response()->json([
+            'status'=>true,
             'message' => 'Issued books list.',
-            'issued_books' => $issuedBooks,
-            'status'=>true
+            'issued_books' => $issuedBooks
         ], 200);
     }
 
@@ -117,8 +119,9 @@ class IssueBookController extends Controller
         }
 
         return response()->json([
+            'status'=>true,
             'message' => 'Issued books retrieved successfully.',
-            'issued_books' => $issuedBooks, 'status'=>true
+            'issued_books' => $issuedBooks
         ], 200);
     }
 
@@ -165,18 +168,13 @@ class IssueBookController extends Controller
             'return_date' => Carbon::now()->toDateString(), 
         ]);
 
-        $admin = User::find(3);
-        if ($admin) {
-            $admin->notify(new BookReturnedNotification($issueBook));
-            $notifications = $admin->notifications;
-            $unreadNotifications = $admin->unreadNotifications;
-        }
+      
         return response()->json([
+            'status'=>true,
             'message' => 'Book return status updated successfully.',
             'data' => $issueBook,
             'shelve_data'=>$bookshelf,
-            'notifications'=>$notifications,
-             'status'=>true
+             
         ],200);
     }
 
@@ -192,7 +190,7 @@ class IssueBookController extends Controller
 
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors(),'status' => false], 400);
+            return response()->json(['status' => false,'error' => $validator->errors()], 400);
         }
    
         $data = BookTransfer::create([
@@ -203,14 +201,16 @@ class IssueBookController extends Controller
         ]);
         
         return response()->json([
+            'status'=>true,
             'message' => 'Book transfer status updated successfully.',
-            'data' => $issueBook, 
-            'status'=>true
+            'data' => $issueBook
+            
         ],200);
         if (!$data) {
             return response()->json([
-                'message' => 'Failed to book transfer status updated ',
-                'status' => false
+                'status' => false,
+                'message' => 'Failed to book transfer status updated '
+                
             ], 500); 
         }
     }
