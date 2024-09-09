@@ -12,6 +12,9 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Auth;
+use DB;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Http\JsonResponse;
 class BookController extends Controller
 {
@@ -271,7 +274,7 @@ class BookController extends Controller
 					$row->page ?? 'NA',
 					$row->quantity ?? 'NA',
 					$row->user->name ?? 'NA',
-					($row->status == 1) ? 'success' : 'danger',
+					($row->status == 1) ? 'active' : 'inactive',
 					$datetime,
                 );
 
@@ -395,7 +398,7 @@ class BookController extends Controller
                              "office_id" => $officeData? $officeData : null,
                              "user_id" => Auth::user()->id,
                              "category_id" => $bookcatData ? $bookcatData : null,
-                             "bookshelves_id	" => $bookshelveData ? $bookshelveData : null,
+                             "bookshelves_id" => $bookshelveData ? $bookshelveData : null,
                              "title" => isset($importData[4]) ? $importData[4] : null,
                              "uid" => isset($importData[5]) ? $importData[5] : null,
                              "author" => isset($importData[6]) ? $importData[6] : null,
@@ -404,8 +407,11 @@ class BookController extends Controller
                              "page" => isset($importData[9]) ? $importData[9] : null,
                              "quantity" => isset($importData[10]) ? $importData[10] : null,
                              "status" => 1,
-                             "qrcode" => strtoupper(generateUniqueAlphaNumeric(10))
+                             "qrcode" => strtoupper(generateUniqueAlphaNumeric(10)),
+                             "created_at" => date('Y-m-d H:i:s'),
+                             "updated_at" => date('Y-m-d H:i:s'),
                          );
+                          $resp = Book::insertData($insertData, $successCount);
                         }						
                               
                     
@@ -437,12 +443,250 @@ class BookController extends Controller
     }
     
     //book issue list
-    public function bookIssueList($id): View
+    public function bookIssueList(Request $request,$id)
     {
-       $data = IssueBook::where('book_id',$id)->paginate(25);
+       $issueDateFrom = $request->input('issue_date_from');
+       $issueDateTo = $request->input('issue_date_to');
+       $query = IssueBook::where('book_id',$id);
+       if (!empty($issueDateFrom) && !empty($issueDateTo)) {
+            $query->whereBetween('issue_books.approve_date', [
+                Carbon::parse($issueDateFrom)->startOfDay(),
+                Carbon::parse($issueDateTo)->endOfDay()
+            ]);
+        } elseif (!empty($issueDateFrom)) {
+            $query->whereDate('issue_books.approve_date', '>=', Carbon::parse($issueDateFrom)->startOfDay());
+        } elseif (!empty($issueDateTo)) {
+            $query->whereDate('issue_books.approve_date', '<=', Carbon::parse($issueDateTo)->endOfDay());
+        }
+        // Get the paginated results
+        $data = $query->paginate(25);
        $book=Book::where('id',$id)->first();
-       return view('lms.book.book-issue-detail',compact('data','book'));
+       return view('lms.book.book-issue-detail',compact('data','book','request'));
        
        
     }
+    
+    //book issue list export csv
+     public function bookIssuecsvExport(Request $request)
+	{
+		$bookData=Book::where('id',$id)->first();
+        $issueDateFrom = $request->input('issue_date_from');
+        $issueDateTo = $request->input('issue_date_to');
+        $query = IssueBook::where('book_id',$id);
+         // Apply date filter
+        if (!empty($issueDateFrom) && !empty($issueDateTo)) {
+            $query->whereBetween('issue_books.approve_date', [
+                Carbon::parse($issueDateFrom)->startOfDay(),
+                Carbon::parse($issueDateTo)->endOfDay()
+            ]);
+        } elseif (!empty($issueDateFrom)) {
+            $query->whereDate('issue_books.approve_date', '>=', Carbon::parse($issueDateFrom)->startOfDay());
+        } elseif (!empty($issueDateTo)) {
+            $query->whereDate('issue_books.approve_date', '<=', Carbon::parse($issueDateTo)->endOfDay());
+        }
+        // Get the paginated results
+        $data = $query->cursor();
+        $book = $data->all();
+        if (count($book) > 0) {
+            $delimiter = ","; 
+            $filename = "issue-lists of-".$bookData->title.".csv"; 
+
+            // Create a file pointer 
+            $f = fopen('php://memory', 'w'); 
+
+            // Set column headers 
+            // $fields = array('SR', 'QRCODE TITLE','CODE','DISTRIBUTOR','ASE','STORE NAME','STORE MOBILE','STORE EMAIL','STORE STATE','STORE ADDRESS','POINTS','DATE'); 
+            $fields = array('SR', 'Member Name','Member Mobile','Member Email','Issue request date','Issued date','Returned date','Remarks'); 
+            fputcsv($f, $fields, $delimiter); 
+
+            $count = 1;
+
+            foreach($book as $row) {
+                $datetime = date('j F, Y', strtotime($row['approve_date']));
+				 $transfer=\App\Model\BookTransfer::where('book_id',$id)->where('from_user_id',$row->user_id)->with('toUser')->first();      
+                if($row->return_date==NUll && !empty($transfer)){
+                        $value= 'Transfer to '.$transfer->toUser->name;
+                                    
+                }
+                $lineData = array(
+                    $count,
+					$item->user->name ?? 'NA',
+                    $item->user->mobile  ?? 'NA',
+					$item->user->email ?? 'NA',
+					$item->request_date ?? 'NA',
+					$item->approve_date ?? 'NA',
+					$item->return_date ?? 'NA',
+				    $value
+                );
+
+                fputcsv($f, $lineData, $delimiter);
+
+                $count++;
+            }
+
+            // Move back to beginning of file
+            fseek($f, 0);
+
+            // Set headers to download file rather than displayed
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="' . $filename . '";');
+
+            //output all remaining data on a file pointer
+            fpassthru($f);
+        }
+	}
+    
+    //bookshelf details with id
+    public function bookshelveDetail($id): JsonResponse
+    {
+       $data = Bookshelve::where('id',$id)->first();
+       if (!$data) {
+                return response()->json(['error'=>true, 'resp'=>'No data found']);
+       } else {
+                return response()->json(['error'=>false, 'resp'=>'Bookshelves List','data'=>$data]);
+       } 
+    }
+    
+    
+    //total available books per office
+    public function availableBookListOffice(Request $request,$id): View
+    {
+       $data = Book::select('books.*')->with('bookshelves')->leftjoin('issue_books', 'issue_books.book_id', '=', 'books.id')->join('offices', 'offices.id', '=', 'books.office_id')
+                                  ->where(function($query) {
+                                        $query->whereNull('issue_books.book_id')
+                                              ->orWhere('issue_books.is_return',1)->orWhere('issue_books.status',0);
+                                    })
+                                  
+                                  ->where('books.office_id',$id)
+                                   ->distinct()
+                                  ->paginate(25);
+                                 // dd($data);
+       $office=Office::where('id',$id)->first();
+       $category=BookCategory::all();
+       return view('lms.book.book-office-detail',compact('data','office','category','request'));
+       
+       
+    }
+    
+    
+     //total issue books per office
+    public function issueBookListOffice(Request $request,$id): View
+    {
+       $data =Book::select('books.*')->with('bookshelves')
+                                    ->join('issue_books', 'issue_books.book_id', '=', 'books.id')
+                                    ->join('offices', 'offices.id', '=', 'books.office_id')
+                                    ->where(function($query) {
+                                        $query->whereNull('issue_books.is_return')
+                                             ;
+                                    })
+                                    
+                                    ->where('books.office_id',$id)
+                                    ->distinct()
+                                    ->get();
+                                 // dd($data);
+       $office=Office::where('id',$id)->first();
+       $category=BookCategory::all();
+       return view('lms.book.book-issue-office-detail',compact('data','office','category','request'));
+       
+       
+    }
+    
+    //unreturned book list
+     public function unreturnedBookList(Request $request): View
+    {
+       $data = IssueBook::select('books.*','users.name','users.mobile','issue_books.approve_date')->join('books', 'issue_books.book_id', '=', 'books.id')->join('users', 'issue_books.user_id', '=', 'users.id')->where('issue_books.status',1)->whereNotNull('issue_books.book_id')->whereNull('issue_books.is_return')->with('bookshelves')->paginate(25);
+       $category=BookCategory::all();
+       $office=Office::all();
+       return view('lms.book.unreturn',compact('data','category','office','request'));
+       
+       
+    }
+    
+    
+     //unreturned book list csv export
+    
+    public function unreturnedBookcsvExport(Request $request)
+	{
+		$keyword = $request->input('keyword');
+        $officeId = $request->input('office_id');
+        $bookshelve=$request->input('bookshelves_id');
+        $cat= $request->input('category_id');
+        $query = IssueBook::select('books.*','users.name','users.mobile','issue_books.approve_date')->join('books', 'issue_books.book_id', '=', 'books.id')->join('users', 'issue_books.user_id', '=', 'users.id')->where('issue_books.status',1)->whereNotNull('issue_books.book_id')->whereNull('issue_books.is_return')->with('bookshelves');
+        // Apply keyword search (e.g., search by book title, user name, or other fields)
+        if (!empty($keyword)) {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('title', 'LIKE', "%{$query}%")
+                      ->orWhere('author', 'LIKE', "%{$query}%")
+                      ->orWhere('uid', 'LIKE', "%{$query}%")
+                      ->orWhere('publisher', 'LIKE', "%{$query}%")
+                      ->orWhere('edition', 'LIKE', "%{$query}%")
+                      ->orWhere('page', 'LIKE', "%{$query}%")
+                      ->orWhere('quantity', 'LIKE', "%{$query}%");
+            });
+        }
+    
+        // Apply filters based on inputs
+        if (!empty($officeId)) {
+            $query->where('books.office_id', $officeId);
+        }
+    
+        if (!empty($bookshelve)) {
+            $query->where('books.bookshelves_id', $bookshelve);
+        }
+    
+        if (!empty($cat)) {
+            $query->where('books.category_id', $cat);
+        }
+
+        // Get the paginated results
+        $data = $query->cursor;
+        $book = $data->all();
+        if (count($book) > 0) {
+            $delimiter = ","; 
+            $filename = "unreturned-books.csv"; 
+
+            // Create a file pointer 
+            $f = fopen('php://memory', 'w'); 
+
+            // Set column headers 
+            // $fields = array('SR', 'QRCODE TITLE','CODE','DISTRIBUTOR','ASE','STORE NAME','STORE MOBILE','STORE EMAIL','STORE STATE','STORE ADDRESS','POINTS','DATE'); 
+            $fields = array('SR', 'Office','Office Location','Bookshelf Number','Category','Title','Uid','Author','Member Name','Member Mobile','Issued Date'); 
+            fputcsv($f, $fields, $delimiter); 
+
+            $count = 1;
+
+            foreach($book as $row) {
+                $datetime = date('j F, Y', strtotime($row['approve_date']));
+				
+
+                $lineData = array(
+                    $count,
+					$row['office']['name'] ?? 'NA',
+                    $row['office']['address'] ?? 'NA',
+					$row->bookshelves->number ?? 'NA',
+					$row->category->name ?? 'NA',
+					$row->title ?? 'NA',
+					$row->uid ?? 'NA',
+					$row->author ?? 'NA',
+					$row->name ?? 'NA',
+					$row->mobile ?? 'NA',
+					$datetime,
+                );
+
+                fputcsv($f, $lineData, $delimiter);
+
+                $count++;
+            }
+
+            // Move back to beginning of file
+            fseek($f, 0);
+
+            // Set headers to download file rather than displayed
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="' . $filename . '";');
+
+            //output all remaining data on a file pointer
+            fpassthru($f);
+        }
+	}
 }

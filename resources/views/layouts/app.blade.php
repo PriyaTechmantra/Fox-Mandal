@@ -64,9 +64,15 @@
                 @endcan
                 
                 @can('book category list')
-                <li class="@if(request()->is('bookcategories*')||request()->is('bookshelves*')||request()->is('books*')) { {{'active'}} }  @endif">
+                <li class="@if(request()->is('bookcategories*')||request()->is('bookshelves*')||request()->is('books*')||request()->is('offices*')||request()->is('unreturned/books*')||request()->is('members*')||request()->is('issues*')) { {{'active'}} }  @endif">
                     <a href="#"><i class="fi fi-br-cube"></i> <span>Lms Management</span></a>
                     <ul>
+                        @can('view member')
+                        <li class="{{ ( request()->is('members*') ) ? 'active' : '' }}"><a href="{{ route('members.index') }}"><i class="fi fi-br-database"></i> <span>Member Management</span></a></li>
+                        @endcan
+                        @can('view office')
+                        <li class="{{ ( request()->is('offices*') ) ? 'active' : '' }}"><a href="{{ route('offices.index') }}"><i class="fi fi-br-database"></i> <span>Office Management</span></a></li>
+                        @endcan
                         @can('book category list')
                         <li class="{{ ( request()->is('bookcategories*') ) ? 'active' : '' }}"><a href="{{route('bookcategories.index')}}"><i class="fi fi-br-database"></i> <span>Book Category Management</span></a></li>
                         @endcan
@@ -75,6 +81,12 @@
                         @endcan
                         @can('book list')
                         <li class="{{ ( request()->is('books*') ) ? 'active' : '' }}"><a href="{{route('books.index')}}"><i class="fi fi-br-database"></i> <span>Book Management</span></a></li>
+                        @endcan
+                        @can('Un-returned book list')
+                        <li class="{{ ( request()->is('unreturned/books*') ) ? 'active' : '' }}"><a href="{{ url('unreturned/books/list') }}"><i class="fi fi-br-database"></i> <span>Un-returned book list</span></a></li>
+                        @endcan
+                        @can('view all book issue')
+                        <li class="{{ ( request()->is('issues*') ) ? 'active' : '' }}"><a href="{{ route('issues.index') }}"><i class="fi fi-br-database"></i> <span>All book issue request list</span></a></li>
                         @endcan
                     </ul>
                 </li>

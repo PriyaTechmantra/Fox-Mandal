@@ -13,7 +13,7 @@
 
                 <div class="card mt-3">
                     <div class="card-header">
-                        <h4>Books
+                        <h4>Un-returned book Details
                             
                         </h4>
                                 <div class="search__filter mb-0">
@@ -38,7 +38,7 @@
                                                     <select class="form-select form-select-sm" aria-label="Default select example" name="bookshelves_id" id="bookshelves">
                                                         <option value="" selected disabled>Select Bookshelve</option>
                                                         
-                                                            <option value="{{ $request->bookshelves_id }}">Select Office  first</option>
+                                                            <option value="">Select Office  first</option>
                                                         
                                                     </select>
                                                 </div>
@@ -62,19 +62,13 @@
                                                         <a href="{{ url()->current() }}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Clear Filter">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                                         </a>
-                                                        @can('book csv export')
-                                                        <a href="{{ url('books/export/csv',['office_id'=>$request->office_id,'bookshelves_id'=>$request->bookshelves_id,'category_id'=>$request->category_id,'keyword'=>$request->keyword]) }}" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Export data in CSV">
+                                                        @can('unreturned book csv export')
+                                                        <a href="{{ url('unreturned/books/export/csv'). '?office_id=' . $request->office_id.'&bookshelves_id='. $request->bookshelves_id.'&category_id'.$request->category_id.'&keyword'.$request->keyword }}" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Export data in CSV">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                                             CSV
                                                         </a>
                                                         @endcan
-                                                        @can('book csv upload')
-                                                        <a href="#csvModal" data-bs-toggle="modal" class="btn btn-sm btn-danger"> Csv upload</a>
-                                                        @endcan
-              
-                                                        @can('create book')
-                                                        <a href="{{ url('books/create') }}" class="btn btn-sm btn-danger">Add Books</a>
-                                                        @endcan
+                                                        
                                                         
                                                     </div>
                                                 </div>
@@ -96,13 +90,16 @@
                                     <th>Title</th>
                                     <th>Uid</th>
                                     <th>Author</th>
-                                    <th>Status</th>
-                                    <th>Qrcode</th>
-                                    <th width="40%">Action</th>
+                                    <th>Member Name</th>
+                                    <th>Member Mobile</th>
+                                    <th>Issued Date</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($data as $index=> $item)
+                                @php
+                                 
+                                @endphp
                                 <tr>
                                     <td>{{ $index+1 }}</td>
                                     <td>{{ $item->office->name ??''}}</td>
@@ -112,22 +109,9 @@
                                     <td>{{ $item->title }}</td>
                                     <td>{{ $item->uid ??'' }}</td>
                                     <td>{{ $item->author ??'' }}</td>
-                                    <td> @can('book status change')<a href="{{ url('books/'.$item->id.'/status/change') }}" ><span class="badge bg-{{($item->status == 1) ? 'success' : 'danger'}}">{{($item->status == 1) ? 'Active' : 'Inactive'}}</span></a>@endcan</td>
-                                    <td><img src="https://bwipjs-api.metafloor.com/?bcid=qrcode&text={{$item->qrcode}}&height=6&textsize=10&scale=6&includetext" alt="" style="height: 105px;width:105px" id="{{$item->qrcode}}"></td>
-                                    <td>
-                                        @can('update book')
-                                        <a href="{{ url('books/'.$item->id.'/edit') }}" class="btn btn-success ">Edit</a>
-                                        @endcan
-                                        @can('view book')
-                                        <a href="{{ url('books/'.$item->id) }}" class="btn btn-secondary mx-2">View</a>
-                                        @endcan
-                                        @can('delete book')
-                                        <a onclick="return confirm('Are you sure ?')" href="{{ url('books/'.$item->id.'/delete') }}" class="btn btn-danger mx-2">Delete</a><br>
-                                        @endcan
-                                        @can('book issue list')
-                                        <a href="{{ url('books/'.$item->id.'/issue/list') }}" class="btn btn-primary mt-2">Number of Issues</a>
-                                        @endcan
-                                    </td>
+                                    <td>{{ $item->name ??'' }}</td>
+                                    <td>{{ $item->mobile ??'' }}</td>
+                                    <td>{{ $item->approve_date ??'' }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -177,10 +161,12 @@
             FetchBookshelfById(bookshelvesId);
         }
 
-        $('select[name="office_id"]').on('change', function(event) {
+        
+             $('select[name="office_id"]').on('change', function(event) {
             var value = $(this).val();
             OfficeChange(value);
         });
+        
     });
 
     function OfficeChange(value) {

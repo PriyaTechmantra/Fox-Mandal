@@ -39,9 +39,9 @@
                                         <a href="{{ url('permissions/'.$permission->id.'/edit') }}" class="btn btn-success">Edit</a>
                                         @endcan
 
-                                        @can('delete permission')
+                                       {{-- @can('delete permission')
                                         <a href="{{ url('permissions/'.$permission->id.'/delete') }}" class="btn btn-danger mx-2">Delete</a>
-                                        @endcan
+                                        @endcan--}}
                                     </td>
                                 </tr>
                                 @endforeach

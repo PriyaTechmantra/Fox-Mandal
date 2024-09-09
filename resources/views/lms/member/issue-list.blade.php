@@ -13,7 +13,7 @@
 
                 <div class="card mt-3">
                     <div class="card-header">
-                        <h4>Issue Details of {{$book->title}}
+                        <h4>Issue Details of {{$user->name}}
                             
                         </h4>
                                 <div class="search__filter mb-0">
@@ -42,7 +42,7 @@
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                                             </a>
                                                             @can('book csv export')
-                                                            <a href="{{ url('books/issue/list/export/csv') }}" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Export data in CSV">
+                                                            <a href="{{ url('members/issue/list/csv/export'). '?issue_date_from='.$request->issue_date_from.'&issue_date_to='.$request->issue_date_to }}" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Export data in CSV">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                                                 CSV
                                                             </a>
@@ -63,9 +63,13 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Member Name</th>
-                                    <th>Member Mobile</th>
-                                    <th>Member Email</th>
+                                    <th>Office</th>
+                                    <th>Office Location</th>
+                                    <th>Bookshelf Number</th>
+                                    <th>Category</th>
+                                    <th>Title</th>
+                                    <th>Uid</th>
+                                    <th>Author</th>
                                     <th>Issue request date</th>
                                     <th>Issued date</th>
                                     <th>Returned date</th>
@@ -75,16 +79,20 @@
                             <tbody>
                                 @foreach ($data as $index=> $item)
                                 @php
-                                $transfer=\App\Model\BookTransfer::where('book_id',$book->id)->where('from_user_id',$item->user_id)->with('toUser')->first();   
+                                $transfer=\App\Model\BookTransfer::where('book_id',$item->book_id)->where('from_user_id',$item->user_id)->with('toUser')->first();   
                                 @endphp
                                 <tr>
                                     <td>{{ $index+1 }}</td>
-                                    <td>{{ $item->user->name ??''}}</td>
-                                    <td>{{ $item->user->mobile ??''}}</td>
-                                    <td>{{ $item->user->email }}</td>
-                                    <td>{{ $item->request_date }}</td>
-                                    <td>{{ $item->approve_date }}</td>
-                                    <td>{{ $item->return_date }}</td>
+                                    <td>{{ $item->book->office->name ??''}}</td>
+                                    <td>{{ $item->book->office->address ??''}}</td>
+                                    <td>{{ $item->book->bookshelves->number ??''}}</td>
+                                    <td>{{ $item->book->category->name ??''}}</td>
+                                    <td>{{ $item->book->title ??'' }}</td>
+                                    <td>{{ $item->book->uid ??''}}</td>
+                                    <td>{{ $item->book->author ??''}}</td>
+                                    <td>{{ date('j F, Y', strtotime($item->request_date)) ??''}}</td>
+                                    <td>{{ date('j F, Y', strtotime($item->approve_date)) ??''}}</td>
+                                    <td>{{ date('j F, Y', strtotime($item->return_date)) ??''}}</td>
                                     @if($item->return_date==NUll && !empty($transfer))
                                     <td>Transfer to {{$transfer->toUser->name ??''}}</td>
                                     @else
