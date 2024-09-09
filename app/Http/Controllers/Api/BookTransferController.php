@@ -81,7 +81,8 @@ class BookTransferController extends Controller
             return response()->json([
                 'message' => 'Book transfer status updated successfully.',
                 'data' => $bookTransfer,
-                'notification' => $notificationDataTo,  'status'=>true
+                'notification' => $notificationDataTo,  
+                'status'=>true
             ], 201); 
             if (!$bookTransfer) {
                 return response()->json([

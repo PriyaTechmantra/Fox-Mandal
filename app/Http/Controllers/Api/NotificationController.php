@@ -19,7 +19,7 @@ class NotificationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
+            return response()->json(['error' => $validator->errors(),'status' => false], 400);
         }
         $user = User::find($request->id);
         if ($user) {
@@ -68,7 +68,7 @@ class NotificationController extends Controller
        
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
+            return response()->json(['error' => $validator->errors(),'status' => false], 400);
         }
        
         $notification = LmsNotification::create([
@@ -109,7 +109,7 @@ class NotificationController extends Controller
     ]);
 
     if ($validator->fails()) {
-        return response()->json(['error' => $validator->errors()], 400);
+        return response()->json(['error' => $validator->errors(),'status' => false], 400);
     }
 
     $id = $request->id;

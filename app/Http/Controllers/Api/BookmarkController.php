@@ -21,7 +21,7 @@ class BookmarkController extends Controller
                 'status' => false
             ], 404);
         }
-        return response()->json(['message' => 'Bookmark list', 'data' => $wishlists  ], 200);
+        return response()->json(['message' => 'Bookmark list', 'data' => $wishlists ,'status' => true], 200);
     }
 
 
@@ -33,7 +33,7 @@ class BookmarkController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
+            return response()->json(['error' => $validator->errors(),'status' => false], 400);
         }
 
         $wishlist = Bookmark::create([

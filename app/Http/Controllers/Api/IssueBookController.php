@@ -27,7 +27,7 @@ class IssueBookController extends Controller
 
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
+            return response()->json(['error' => $validator->errors(),'status' => false], 400);
         }
 
         $insertedData = [];
@@ -48,11 +48,13 @@ class IssueBookController extends Controller
             return response()->json([
                 'message' => 'Books issued successfully.',
                 'data' => $insertedData,
+                'status' => true
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'An error occurred while issuing books.',
                 'error' => $e->getMessage(),
+                'status' => false
             ], 500);
         }
 
@@ -133,13 +135,13 @@ class IssueBookController extends Controller
        ;
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
+            return response()->json(['error' => $validator->errors(),'status' => false], 400);
         }
         $bookshelf = Bookshelve::where('qrcode', $request->qrcode)
         ->first();
 
         if (!$bookshelf) {
-            return response()->json(['message' => 'No bookshelf found for the provided QR code.'], 404);
+            return response()->json(['message' => 'No bookshelf found for the provided QR code.','status' => false], 404);
         }
 
         $book = Book::where('bookshelves_id', $bookshelf->id)
@@ -147,7 +149,7 @@ class IssueBookController extends Controller
                     ->first();
 
         if (!$book) {
-            return response()->json(['message' => 'No book found on the provided bookshelf.'], 404);
+            return response()->json(['message' => 'No book found on the provided bookshelf.','status' => false], 404);
         }
 
         $issueBook = IssueBook::where([
@@ -156,7 +158,7 @@ class IssueBookController extends Controller
         ])->first();
 
         if (!$issueBook) {
-            return response()->json(['message' => 'No active issue record found for this book or the book has already been returned.'], 404);
+            return response()->json(['message' => 'No active issue record found for this book or the book has already been returned.','status' => false], 404);
         }
 
         $issueBook->update([
@@ -191,7 +193,7 @@ class IssueBookController extends Controller
 
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
+            return response()->json(['error' => $validator->errors(),'status' => false], 400);
         }
    
         $data = BookTransfer::create([

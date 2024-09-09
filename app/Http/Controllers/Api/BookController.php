@@ -19,7 +19,7 @@ class BookController extends Controller
             return response()->json([
                 'message' => 'Book list found',
                 'status' => false
-            ], 401);
+            ], 404);
         }
     }
 
@@ -32,7 +32,7 @@ class BookController extends Controller
             return response()->json([
                 'message' => 'Book list found',
                 'status' => false
-            ], 401);
+            ], 404);
         }
     }
     public function bookDetails(Request $request)
@@ -50,7 +50,7 @@ class BookController extends Controller
                 return response()->json([
                     'message' => 'Details not found',
                     'status' => false
-                ], 401);
+                ], 404);
             }
             
         } catch (\Exception $e) {
@@ -65,59 +65,77 @@ class BookController extends Controller
 
     public function search(Request $request)
     {
-        $title = $request->input('title');
-        $publisher = $request->input('publisher');
-        $author = $request->input('author');
-        $uid = $request->input('uid');
+        try{
+            $title = $request->input('title');
+            $publisher = $request->input('publisher');
+            $author = $request->input('author');
+            $uid = $request->input('uid');
 
-        $books = Book::query();
+            $books = Book::query();
 
-        if ($title) {
-            $books->where('title', 'LIKE', "%{$title}%");
-        }
-        if ($publisher) {
-            $books->where('publisher', 'LIKE', "%{$publisher}%");
-        }
-        if ($author) {
-            $books->where('author', 'LIKE', "%{$author}%");
-        }
-        if ($uid) {
-            $books->where('uid', 'LIKE', "%{$uid}%");
-        }
+            if ($title) {
+                $books->where('title', 'LIKE', "%{$title}%");
+            }
+            if ($publisher) {
+                $books->where('publisher', 'LIKE', "%{$publisher}%");
+            }
+            if ($author) {
+                $books->where('author', 'LIKE', "%{$author}%");
+            }
+            if ($uid) {
+                $books->where('uid', 'LIKE', "%{$uid}%");
+            }
 
-        $books = $books->with('issuebook')->get();
-        if ($books) {
+            $books = $books->with('issuebook')->get();
+            if ($books) {
+                return response()->json([
+                    'message' => 'List of search data', 
+                    'data' => $books, 
+                    'status'=>true
+                ], 200);
+            }else {
+                return response()->json([
+                    'message' => 'No data found',
+                    'status' => false
+                ], 401);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack(); 
+            Log::error('Book transfer error: ' . $e->getMessage());
             return response()->json([
-                'message' => 'List of search data', 
-                'data' => $books, 
-                'status'=>true
-            ], 200);
-        }else {
-            return response()->json([
-                'message' => 'No data found',
-                'status' => false
-            ], 401);
+                'message' => 'An error occurred during the book transfer.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
 
     public function searchDetailsByQrCode(Request $request)
     {
-  
-        $qrcode = $request->input('qrcode');
+        try{
+            $qrcode = $request->input('qrcode');
 
-        $book = Book::where('qrcode', $qrcode)->with('category')->with('bookshelves')
-            ->first();
-        if ($book) {
+            $book = Book::where('qrcode', $qrcode)->with('category')->with('bookshelves')
+                ->first();
+            if ($book) {
+                return response()->json([
+                    'message' => 'Details of book by Qr-Code',
+                    'data' =>$book,
+                    'status' => true
+                ], 200);
+            }else {
+                return response()->json([
+                    'message' => 'Details not found',
+                    'status' => false
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack(); 
+            Log::error('Book transfer error: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Details of book by Qr-Code',
-                'data' =>$book
-            ], 200);
-        }else {
-            return response()->json([
-                'message' => 'Details not found',
-                'status' => false
-            ], 401);
+                'message' => 'An error occurred during the book transfer.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
     public function CategoryWiseBookList(Request $request)
@@ -136,7 +154,7 @@ class BookController extends Controller
             return response()->json([
                 'message' => 'Book not found',
                 'status' => false
-            ], 401);
+            ], 404);
         }
     }
 
@@ -163,7 +181,7 @@ class BookController extends Controller
             return response()->json([
                 'message' => 'Book not found',
                 'status' => false
-            ], 401);
+            ], 204);
         }
     }
 
@@ -183,9 +201,7 @@ class BookController extends Controller
             'status'=>true,
             'books' => $books->map(function ($book) {
                 return [
-                    
                     'data'=> $book,
-                   
                 ];
             })
         ],200);
@@ -193,7 +209,7 @@ class BookController extends Controller
             return response()->json([
                 'message' => 'Book not found',
                 'status' => false
-            ], 401);
+            ], 204);
         }
 
     }
