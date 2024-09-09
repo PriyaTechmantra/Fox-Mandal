@@ -13,7 +13,7 @@
 
                 <div class="card mt-3">
                     <div class="card-header">
-                        <h4>Books
+                        <h4>Available book Details of {{$office->name}} ({{$office->address}})
                             
                         </h4>
                                 <div class="search__filter mb-0">
@@ -26,19 +26,12 @@
                                         
                                         <div class="col-md-12 text-end">
                                             <form class="row align-items-end" action="">
-                                                <div class="col">
-                                                    <select class="form-select form-select-sm" aria-label="Default select example" name="office_id" id="office_id">
-                                                        <option value="" selected disabled>Select Office</option>
-                                                        @foreach ($office as $cat)
-                                                            <option value="{{$cat->id}}" {{request()->input('office_id') == $cat->id ? 'selected' : ''}}> {{$cat->name}}({{$cat->address}})</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
+                                               
                                                 <div class="col">
                                                     <select class="form-select form-select-sm" aria-label="Default select example" name="bookshelves_id" id="bookshelves">
                                                         <option value="" selected disabled>Select Bookshelve</option>
                                                         
-                                                            <option value="{{ $request->bookshelves_id }}">Select Office  first</option>
+                                                            <option value="">Select Office  first</option>
                                                         
                                                     </select>
                                                 </div>
@@ -63,18 +56,12 @@
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                                         </a>
                                                         @can('book csv export')
-                                                        <a href="{{ url('books/export/csv',['office_id'=>$request->office_id,'bookshelves_id'=>$request->bookshelves_id,'category_id'=>$request->category_id,'keyword'=>$request->keyword]) }}" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Export data in CSV">
+                                                        <a href="{{ url('books/export/csv'). '?office_id=' . $office->id.'&bookshelves_id='. $request->bookshelves_id.'&category_id'.$request->category_id.'&keyword'.$request->keyword }}" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Export data in CSV">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                                             CSV
                                                         </a>
                                                         @endcan
-                                                        @can('book csv upload')
-                                                        <a href="#csvModal" data-bs-toggle="modal" class="btn btn-sm btn-danger"> Csv upload</a>
-                                                        @endcan
-              
-                                                        @can('create book')
-                                                        <a href="{{ url('books/create') }}" class="btn btn-sm btn-danger">Add Books</a>
-                                                        @endcan
+                                                        
                                                         
                                                     </div>
                                                 </div>
@@ -166,7 +153,7 @@
 @section('script')
 <script>
     $(document).ready(function() {
-        var officeId = '{{ request()->input('office_id') }}';
+        var officeId = '{{ $office->id }}';
         var bookshelvesId = '{{ request()->input('bookshelves_id') }}';
 
         // Check if office_id is present
@@ -177,10 +164,10 @@
             FetchBookshelfById(bookshelvesId);
         }
 
-        $('select[name="office_id"]').on('change', function(event) {
-            var value = $(this).val();
+        
+            var value = '{{ $office->id }}';
             OfficeChange(value);
-        });
+        
     });
 
     function OfficeChange(value) {

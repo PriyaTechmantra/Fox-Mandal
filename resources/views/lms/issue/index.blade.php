@@ -13,7 +13,7 @@
 
                 <div class="card mt-3">
                     <div class="card-header">
-                        <h4>Issue Details of {{$book->title}}
+                        <h4>Issue List
                             
                         </h4>
                                 <div class="search__filter mb-0">
@@ -41,12 +41,12 @@
                                                             <a href="{{ url()->current() }}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Clear Filter">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                                             </a>
-                                                            @can('book csv export')
+                                                            {{--@can('book csv export')
                                                             <a href="{{ url('books/issue/list/export/csv') }}" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Export data in CSV">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                                                 CSV
                                                             </a>
-                                                            @endcan
+                                                            @endcan--}}
                                                         </div>
                                                     </div>
                                                 </form>
@@ -64,12 +64,9 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Member Name</th>
-                                    <th>Member Mobile</th>
-                                    <th>Member Email</th>
+                                    <th>Book Name</th>
                                     <th>Issue request date</th>
-                                    <th>Issued date</th>
-                                    <th>Returned date</th>
-                                    <th>Remarks</th>
+                                    <th>Approval</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -79,17 +76,22 @@
                                 @endphp
                                 <tr>
                                     <td>{{ $index+1 }}</td>
-                                    <td>{{ $item->user->name ??''}}</td>
-                                    <td>{{ $item->user->mobile ??''}}</td>
-                                    <td>{{ $item->user->email }}</td>
-                                    <td>{{ $item->request_date }}</td>
-                                    <td>{{ $item->approve_date }}</td>
-                                    <td>{{ $item->return_date }}</td>
-                                    @if($item->return_date==NUll && !empty($transfer))
-                                    <td>Transfer to {{$transfer->toUser->name ??''}}</td>
-                                    @else
-                                    <td></td>
-                                    @endif
+                                    <td><a href="{{ url('members/'.$item->user->id) }}">{{ $item->user->name ??''}}</a></td>
+                                    <td><a href="{{ url('books/'.$item->book->id) }}">{{ $item->book->title ??''}}</a></td>
+                                    <td><span class="text-dark font-weight-bold mb-2">
+                                            {{date('j M Y g:i A', strtotime($item->request_date))}}
+                                        </span></td>
+                                    <td>
+                							<div class="btn-group" role="group">
+                								<a href="{{ url('issues/books/'.$item->id.'/status/change', [$item->id, 1]) }}" type="button" class="status_1 btn btn-outline-primary btn-sm {{($item->status == 1) ? 'active' : ''}}">Approved</a>
+                
+                								<a href="{{ url('issues/books/'.$item->id.'/status/change', [$item->id, 0]) }}" type="button" class="status_2 btn btn-outline-danger btn-sm {{($item->status == 0) ? 'active' : ''}}">Rejected</a>
+                							</div>
+                    						@if($item->status == 1)
+                    							 <span class="badge bg-success">Approved</span>
+                    						@else <span class="badge bg-danger">Rejected</span>
+                    						@endif
+            						</td>
                                 </tr>
                                 @endforeach
                             </tbody>

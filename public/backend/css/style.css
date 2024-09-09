@@ -196,7 +196,7 @@ html {
 }
 .main__nav > ul > li:hover {
     color: #fff;
-    background: rgb(219, 110, 76);
+    background: #431d1f;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
     /*-webkit-box-shadow: inset 240px 0px 0px 0px rgba(193,9,9,1);
 	-moz-box-shadow: inset 240px 0px 0px 0px rgba(193,9,9,1);
@@ -204,7 +204,7 @@ html {
 }
 .main__nav > ul > li.active {
     color: #fff;
-    background: rgb(219, 110, 76);
+    background: #431d1f;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
 }
 .main__nav ul ul {
