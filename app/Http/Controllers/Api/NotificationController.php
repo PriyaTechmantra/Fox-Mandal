@@ -71,19 +71,29 @@ class NotificationController extends Controller
             return response()->json(['error' => $validator->errors(),'status' => false], 400);
         }
        
-        $notification = LmsNotification::create([
-            'book_id' => $request->book_id,
-            'sender_id' => $request->sender_id,
-            'receiver_id' => $request->receiver_id,
-            'message' => $request->message,
-            'notification_type' => $request->notification_type,
-        ]);
-
-        return response()->json([
-            'message' => 'Notification created successfully',
-            'data' => $notification, 
-            'status'=>true
-        ], 201);
+        try {
+            $notification = LmsNotification::create([
+                'book_id' => $request->book_id,
+                'sender_id' => $request->sender_id,
+                'receiver_id' => $request->receiver_id,
+                'message' => $request->message,
+                'notification_type' => $request->notification_type,
+            ]);
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Notification created successfully',
+                'data' => $notification,
+                'status'=>true
+            ],201);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to create notification',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function notificationListByUser(Request $request)
