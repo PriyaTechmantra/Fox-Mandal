@@ -36,7 +36,7 @@ Route::get('/books/details-by-qrcode', [BookController::class, 'searchDetailsByQ
 Route::get('/books/category-wise-list', [BookController::class, 'CategoryWiseBookList']);
 
 
-Route::post('/issue-books', [IssueBookController::class, 'store']);
+Route::middleware('api')->post('/issue-books', [IssueBookController::class, 'store']);
 
 Route::get('/issue-books/list-by-user', [IssueBookController::class, 'listByUser']);
 Route::patch('/return-book', [IssueBookController::class, 'returnBook']);
