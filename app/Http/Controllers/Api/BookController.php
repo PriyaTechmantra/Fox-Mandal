@@ -6,180 +6,212 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Bookshelve;
+use Illuminate\Support\Facades\Validator;
 
 class BookController extends Controller
 {
-    
-
     public function index(Request $request)
     {
-  
-        $query = $request->input('query');
-
         $books = Book::get();
+        if ($books) {
+             return response()->json(['message' => 'List of book','data' => $books , 'status'=>true], 200);
+        }else {
+            return response()->json([
+                'message' => 'Book list found',
+                'status' => false
+            ], 404);
+        }
+    }
 
-        return response()->json(['message' => 'List of book',$books], 200);
+    public function bookWithIssuedBook(Request $request)
+    {
+        $books = Book::with('issuebook')->get();
+        if ($books) {
+            return response()->json(['message' => 'List of book with issue details','data' => $books, 'status'=>true], 200);
+        }else {
+            return response()->json([
+                'message' => 'Book list found',
+                'status' => false
+            ], 404);
+        }
     }
     public function bookDetails(Request $request)
     {
   
-        $books = Book::findOrFail($request->id);
-
-        return response()->json(['message' => 'Detail of book',$books], 200);
+        try {
+            $book = Book::findOrFail($request->id);
+            if ($book) {
+            return response()->json([
+                'message' => 'Detail of book',
+                'data' => $book,
+                'status' => true
+            ], 200);
+            }else {
+                return response()->json([
+                    'message' => 'Details not found',
+                    'status' => false
+                ], 404);
+            }
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while fetching the book details.',
+                'error' => $e->getMessage(),
+                'status' => false
+            ], 500);
+        }
     }
-    // public function store(Request $request)
-    // {
-  
-    //     $query = $request->input('query');
+   
 
-    //     $books = Book::get();
-
-    //     return response()->json(['message' => 'List of book',$books], 200);
-    // }
     public function search(Request $request)
     {
-  
-        $query = $request->input('query');
+        try{
+            $title = $request->input('title');
+            $publisher = $request->input('publisher');
+            $author = $request->input('author');
+            $uid = $request->input('uid');
 
-        $books = Book::where('title', 'LIKE', "%{$query}%")
-            ->orWhere('publisher', 'LIKE', "%{$query}%")
-            ->orWhere('author', 'LIKE', "%{$query}%")
-            ->orWhere('uid', 'LIKE', "%{$query}%")
-            ->get();
+            $books = Book::query();
 
-        // return response()->json($books);
-        return response()->json(['message' => 'List of search data',$books], 200);
+            if ($title) {
+                $books->where('title', 'LIKE', "%{$title}%");
+            }
+            if ($publisher) {
+                $books->where('publisher', 'LIKE', "%{$publisher}%");
+            }
+            if ($author) {
+                $books->where('author', 'LIKE', "%{$author}%");
+            }
+            if ($uid) {
+                $books->where('uid', 'LIKE', "%{$uid}%");
+            }
+
+            $books = $books->with('issuebook')->get();
+            if ($books) {
+                return response()->json([
+                    'message' => 'List of search data', 
+                    'data' => $books, 
+                    'status'=>true
+                ], 200);
+            }else {
+                return response()->json([
+                    'message' => 'No data found',
+                    'status' => false
+                ], 401);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack(); 
+            Log::error('Book transfer error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'An error occurred during the book transfer.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
+
 
     public function searchDetailsByQrCode(Request $request)
     {
-  
-        $qrcode = $request->input('qrcode');
+        try{
+            $qrcode = $request->input('qrcode');
 
-        $book = Book::where('qrcode', $qrcode)
-            ->first();
-
-        // return response()->json($books);
-        return response()->json([
-                                    'message' => 'Details of book by Qr-Code',
-                                    'data' =>$book
-                                ], 200);
+            $book = Book::where('qrcode', $qrcode)->with('category')->with('bookshelves')
+                ->first();
+            if ($book) {
+                return response()->json([
+                    'message' => 'Details of book by Qr-Code',
+                    'data' =>$book,
+                    'status' => true
+                ], 200);
+            }else {
+                return response()->json([
+                    'message' => 'Details not found',
+                    'status' => false
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack(); 
+            Log::error('Book transfer error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'An error occurred during the book transfer.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
     public function CategoryWiseBookList(Request $request)
     {
-  
-        // $qrcode = $request->input('qrcode');
-
+       
         $book = Book::where('category_id', $request->category_id)
             ->get();
 
-        // return response()->json($books);
-        return response()->json([
-                                    'message' => 'Book list by category wise',
-                                    'data' =>$book
-                                ], 200);
+        if ($book->isNotEmpty()) {
+            return response()->json([
+                'message' => 'Book list by category wise',
+                'data' =>$book,
+                'status'=>true
+            ], 200);
+        }else {
+            return response()->json([
+                'message' => 'Book not found',
+                'status' => false
+            ], 404);
+        }
     }
 
-    // public function showBooksByBookShelveQRCode(Request $request)
-    // {
-    //     // Find the bookshelf by its QR code
-    //     $bookshelve = Bookshelve::where('qrcode', $request->qrcode)->first();
-
-    //     // Check if the bookshelf exists
-    //     if (!$bookshelve) {
-    //         return response()->json(['message' => 'Bookshelf not found'], 404);
-    //     }
-
-    //     // Retrieve the books related to the found bookshelf
-    //     $books = $bookshelve->books;
-
-    //     // Format and return the book details as a JSON response
-    //     return response()->json([
-    //         // 'bookshelve' => [
-    //         //     'id' => $bookshelve->id,
-    //         //     'qrcode' => $bookshelve->qrcode,
-    //         //     // 'location' => $bookshelve->location,
-    //         //     // 'description' => $bookshelve->description,
-    //         // ],
-    //         'books' => $books->map(function ($book) {
-    //             return [
-    //                 'data'=>$book
-    //                 // 'title' => $book->title,
-    //                 // 'author' => $book->author,
-    //                 // 'publisher' => $book->publisher,
-    //                 // 'edition' => $book->edition,
-    //                 // 'quantity' => $book->quantity,
-    //             ];
-    //         }),
-    //     ]);
-    // }
     public function showBooksByBookShelveQRCode(Request $request)
     {
-        // Find the bookshelf by its QR code
         $bookshelve = Bookshelve::where('qrcode', $request->qrcode)->first();
 
-        // Check if the bookshelf exists
         if (!$bookshelve) {
-            return response()->json(['message' => 'Bookshelf not found'], 404);
+            return response()->json(['message' => 'Bookshelf not found','status'=>false], 404);
         }
 
-        // Retrieve the books related to the found bookshelf, with their office and category details
         $books = $bookshelve->books()->with(['office', 'category'])->get();
-
-        // Format and return the book details as a JSON response
-        return response()->json([
-            'books' => $books->map(function ($book) {
-                return [
-                    'message' => 'Book list by shelve QR-code wise',
-                    'data'=> $book
-                    // 'id' => $book->id,
-                    // 'title' => $book->title,
-                    // 'author' => $book->author,
-                    // 'publisher' => $book->publisher,
-                    // 'edition' => $book->edition,
-                    // 'quantity' => $book->quantity,
-                    // 'office' => [
-                    //     'id' => $book->office->id,
-                    //     'name' => $book->office->name,
-                    //     'location' => $book->office->location,
-                    // ],
-                    // 'category' => [
-                    //     'id' => $book->category->id,
-                    //     'name' => $book->category->name,
-                    //     'description' => $book->category->description,
-                    // ],
-                ];
-            })
-        ],200);
+        if ($books) {
+            return response()->json([
+                'books' => $books->map(function ($book) {
+                    return [
+                        'message' => 'Book list by shelve QR-code wise',
+                        'data'=> $book,
+                        'status'=>true
+                    ];
+                })
+            ],200);
+        }else {
+            return response()->json([
+                'message' => 'Book not found',
+                'status' => false
+            ], 404);
+        }
     }
 
+   
     public function showBooksByBookShelve(Request $request)
     {
         $bookshelve = Bookshelve::where('number', $request->number)->first();
 
         if (!$bookshelve) {
-            return response()->json(['message' => 'Bookshelf not found'], 404);
+            return response()->json(['message' => 'Bookshelf not found','status'=>false], 404);
         }
 
         $books = $bookshelve->books()->get();
-
+        if ($books) {
         return response()->json([
+            'message' => 'Book list by shelve QR-code wise', 
+            'status'=>true,
             'books' => $books->map(function ($book) {
                 return [
-                    'message' => 'Book list by shelve QR-code wise',
-                    'data'=> $book
+                    'data'=> $book,
                 ];
             })
         ],200);
+        }else {
+            return response()->json([
+                'message' => 'Book not found',
+                'status' => false
+            ], 404);
+        }
 
-       
-
-        // $books = Book::where('bookshelves_id', $request->bookshelves_id)->get();
-
-        // return response()->json([
-        //             'message' => 'Book list by shelve wise',
-        //             'data'=> $books
-        // ],200);
     }
 
 

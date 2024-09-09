@@ -6,27 +6,47 @@ use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\Bookmark;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Validator;
+
 
 class BookmarkController extends Controller
 {
     public function index(Request $request)
     {
         $wishlists = Bookmark::where('user_id', $request->user_id)->with('book')->get();
-        return response()->json(['message' => 'Bookmark list', 'data' => $wishlists], 200);
+        if ($wishlists->isEmpty()) {
+            return response()->json([
+                'message' => 'No bookmarks found for this user',
+                'status' => false
+            ], 404);
+        }
+        return response()->json(['message' => 'Bookmark list', 'data' => $wishlists ,'status' => true], 200);
     }
 
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
             'book_id' => 'required',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors(),'status' => false], 400);
+        }
 
         $wishlist = Bookmark::create([
             'user_id' => $request->user_id,
             'book_id' => $request->book_id,
         ]);
+        return response()->json(['message' => 'Book added to wishlist', 'wishlist' => $wishlist, 'status'=>true], 201);
 
-        return response()->json(['message' => 'Book added to wishlist', 'wishlist' => $wishlist], 200);
+        if (!$wishlist) {
+            return response()->json([
+                'message' => 'Failed to book added to wishlist',
+                'status' => false
+            ], 500); 
+        }
     }
 }

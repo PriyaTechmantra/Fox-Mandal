@@ -39,6 +39,7 @@ class Book extends Model
      {
          return $this->belongsTo(BookCategory::class);
      }
+
      
      public static function insertData($data, $successCount) {
         $id='';
@@ -66,6 +67,11 @@ class Book extends Model
         // return $count;
 
        
-        
+     }   
+
+    public function issuebook()
+    {
+         return $this->hasMany(IssueBook::class);
+
     }
 }

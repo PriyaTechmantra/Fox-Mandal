@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\IssueBookController;
 use App\Http\Controllers\Api\BookShelveController;
 use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\BookTransferController;
+use App\Http\Controllers\Api\NotificationController;
 
 
 /*
@@ -31,6 +32,7 @@ Route::post('login', [AuthController::class, 'sendOtp']);
 Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
 Route::get('/books/search', [BookController::class, 'search']);
 Route::get('/books/list', [BookController::class, 'index']);
+Route::get('/books/list/with-issuedbook', [BookController::class, 'bookWithIssuedBook']);
 Route::get('/books/detail', [BookController::class, 'bookDetails']);
 Route::get('/books/details-by-qrcode', [BookController::class, 'searchDetailsByQrCode']);
 Route::get('/books/category-wise-list', [BookController::class, 'CategoryWiseBookList']);
@@ -39,6 +41,9 @@ Route::get('/books/category-wise-list', [BookController::class, 'CategoryWiseBoo
 Route::middleware('api')->post('/issue-books', [IssueBookController::class, 'store']);
 
 Route::get('/issue-books/list-by-user', [IssueBookController::class, 'listByUser']);
+Route::get('/issue-books/issued-list-by-user', [IssueBookController::class, 'issuedBookListByUser']);
+Route::get('/issue-books/request-list-by-user', [IssueBookController::class, 'requestedBookListByUser']);
+
 Route::patch('/return-book', [IssueBookController::class, 'returnBook']);
 Route::post('/transfer-book', [BookTransferController::class, 'transferBook']);
 
@@ -46,7 +51,18 @@ Route::get('/books-shelve/search-by-qrcode', [BookShelveController::class, 'sear
 Route::post('/bookmark', [BookmarkController::class, 'store']);
 Route::get('/bookmark/list', [BookmarkController::class, 'index']);
 
-Route::get('/books/detai-by-book-shelves-qrcode', [BookController::class, 'showBooksByBookShelveQRCode']);
-Route::get('/books/detai-by-book-shelves', [BookController::class, 'showBooksByBookShelve']);
+Route::get('/books/detail-by-book-shelves-qrcode', [BookController::class, 'showBooksByBookShelveQRCode']);
+Route::get('/books/detail-by-book-shelves', [BookController::class, 'showBooksByBookShelve']);
+
+
+Route::post('/save-fcm-token', [NotificationController::class, 'saveToken']);
+
+
+Route::post('/save-notification', [NotificationController::class, 'Notification']);
+Route::get('/notification-list-by-user', [NotificationController::class, 'notificationListByUser']);
+Route::post('/notification-read', [NotificationController::class, 'markAsRead']);
+
+
+
 
 

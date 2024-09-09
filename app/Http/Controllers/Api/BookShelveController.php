@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Bookshelve;
+use Illuminate\Support\Facades\Validator;
 
 class BookShelveController extends Controller
 {
@@ -15,10 +16,17 @@ class BookShelveController extends Controller
 
         $book = Bookshelve::where('qrcode', $qrcode)
             ->get();
-
+        if($book->isEmpty()) {
+            return response()->json([
+                'message' => 'No data found for this qr-code.', 'status'=>false
+            ], 404);
+        }
         return response()->json([
-                                    'message' => 'Book selves by QR-code',
-                                    'data' =>$book
-                                ], 200);
+            'message' => 'Book selves by QR-code',
+            'data' =>$book, 
+            'status'=>true
+        ], 200);
+
+      
     }
 }

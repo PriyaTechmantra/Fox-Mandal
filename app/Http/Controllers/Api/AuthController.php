@@ -11,6 +11,7 @@ use Carbon\Carbon;
 
 class AuthController extends Controller
 {
+    
     public function sendOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -18,33 +19,51 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
+            return response()->json([
+                'error' => $validator->errors(),
+                'status' => false
+            ], 400);
         }
+        try {
+            $phoneNumber = $request->input('mobile');
 
-        $phoneNumber = $request->mobile;
-        $otp = rand(100000, 999999); // Generate a 6-digit OTP
-        // $expiresAt = Carbon::now()->addMinutes(10); // OTP valid for 10 minutes
+            $user = User::where('mobile', $phoneNumber)->first();
 
-        $user = User::where('mobile', $phoneNumber)->first();
+            if (!$user) {
+                return response()->json([
+                    'error' => 'User not found',
+                    'status' => false
+                ], 404);
+            }
 
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
+            $otp = random_int(1000, 9999);
+
+            $updateSuccessful = $user->update(['otp' => $otp]);
+
+            if (!$updateSuccessful) {
+                return response()->json([
+                    'message' => 'Failed to send OTP, please try again later',
+                    'status' => false
+                ], 500); 
+            }
+
+            return response()->json([
+                'message' => 'OTP sent successfully',
+                'name' => $user->name,
+                'email' => $user->email,
+                'mobile' => $user->mobile,
+                'status' => true
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack(); 
+            Log::error('Book transfer error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'An error occurred during the book transfer.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        // Update OTP and expiration
-        $user->update([
-            'otp' => $otp,
-        ]);
-
-        // Here you should send OTP to the user's phone number
-        // For this example, we'll just return the OTP in the response for testing purposes
-        return response()->json(['message' => 'OTP sent successfully', 
-        'otp' => $otp,
-        'name'=> $user->name,
-        'email'=> $user->email,
-        'mobile'=> $user->mobile,
-    ], 200);
     }
+
 
     public function verifyOtp(Request $request)
     {
@@ -54,23 +73,33 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
+            return response()->json(['error' => $validator->errors(),'status' => false], 400);
+        }
+        try{
+            $phoneNumber = $request->mobile;
+            $otp = $request->otp;
+
+            $user = User::where('mobile', $phoneNumber)
+                        ->where('otp', $otp)
+                        ->first();
+            if ($user) {
+                return response()->json(['message' => 'OTP verified successfully',
+                'status'=>true], 200);
+            }else {
+                return response()->json([
+                    'message' => 'Invalid OTP or mobile number',
+                    'status' => false
+                ], 401);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack(); 
+            Log::error('Book transfer error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'An error occurred during the book transfer.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
 
-        $phoneNumber = $request->mobile;
-        $otp = $request->otp;
-
-        $user = User::where('mobile', $phoneNumber)
-                    ->where('otp', $otp)
-                    // ->where('otp_expires_at', '>', Carbon::now())
-                    ->first();
-        if ($user) {
-            
-
-            return response()->json(['message' => 'OTP verified successfully'], 200);
-        }
-
-        // return response()->json(['error' => 'Invalid or expired OTP'], 400);
     }
 
 }

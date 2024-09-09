@@ -9,57 +9,38 @@ use App\Models\Book;
 use App\Models\BookTransfer;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
+use App\Models\User;
+use App\Notifications\BookReturnedNotification;
+use Illuminate\Support\Facades\Validator;
 
 class IssueBookController extends Controller
 {
     public function store(Request $request)
     {
 
-        // $validated = $request->validate([
-        //     'book_id' => 'required|array',
-        //     'request_date' => 'required|date',
-        //     'approve_date' => 'nullable|date',
-        // ]);
-
-        // $bookIds = $request->book_id; 
-        // foreach ($bookIds as $bookId) {
-        // $data = IssueBook::create([
-        //         'user_id' => $request->user_id,
-        //         'book_id' => $bookId,
-        //         'request_date' => $request->request_date,
-        //         'status' => $request->status,
-        //         // Uncomment and use the status field if needed
-        //         // 'status' => $validated['status'],
-        //         'approve_date' => $request->approve_date,
-        //     ]);
-        //     $insertedData[] = $data;
-        // }
-
-  
-        // return response()->json([
-        //     'message' => 'Books issued successfully.',
-        //    'data'=>$insertedData
-        // ]);
-
-
-        // Validate the input data
-        $validated = $request->validate([
+       
+        $validator = Validator::make($request->all(), [
             'book_id' => 'required|array',
             'user_id' => 'required', 
-            'request_date' => 'required',
-            //  'approve_date' => 'nullable',
+            // 'request_date' => 'required',
         ]);
+
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors(),'status' => false], 400);
+        }
 
         $insertedData = [];
 
         try {
-            
-            foreach ($validated['book_id'] as $bookId) {
+            if($request->book_id){
+                
+            }
+            foreach ($request->book_id as $bookId) {
                 $data = IssueBook::create([
-                    'user_id' => $validated['user_id'],
+                    'user_id' => $request->user_id,
                     'book_id' => $bookId,
-                    'request_date' => $validated['request_date'],
-                    // 'approve_date' => $validated['approve_date'],
+                    'request_date' => now()->toDateString(),
                 ]);
                 $insertedData[] = $data;
             }
@@ -67,11 +48,13 @@ class IssueBookController extends Controller
             return response()->json([
                 'message' => 'Books issued successfully.',
                 'data' => $insertedData,
+                'status' => true
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'An error occurred while issuing books.',
                 'error' => $e->getMessage(),
+                'status' => false
             ], 500);
         }
 
@@ -81,54 +64,100 @@ class IssueBookController extends Controller
   
         $userId = $request->input('user_id');
 
-        $books = IssueBook::where('user_id', $userId)
+        $books = IssueBook::where('user_id', $userId)->with('book')
             ->get();
 
-       
+        if ($books->isEmpty()) {
+            return response()->json([
+                'message' => 'No issued books found for this user.', 'status'=>false
+            ], 404);
+        }
         return response()->json([
-                                    'message' => 'List of book of user',
-                                    'data' =>$books
-                                ], 200);
+            'message' => 'List of book of user',
+            'data' =>$books,
+            'status'=>true
+        ], 200);
     }
 
-    
+    public function issuedBookListByUser(Request $request)
+    {
+      
+        $issuedBooks = IssueBook::where('user_id', $request['user_id'])
+            ->where('status', 1)
+            ->whereNull('is_return')
+            ->with('book') 
+            ->orderBy('approve_date', 'desc')
+            ->get();
+            
+        if ($issuedBooks->isEmpty()) {
+            return response()->json([
+                'message' => 'No issued books found for this user.', 'status'=>false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Issued books list.',
+            'issued_books' => $issuedBooks,
+            'status'=>true
+        ], 200);
+    }
+
+    public function requestedBookListByUser(Request $request)
+    {
+        $issuedBooks = IssueBook::where('user_id', $request['user_id'])
+            ->whereNull('status')
+            ->with('book') 
+            ->orderBy('request_date', 'desc')
+            ->get();
+
+        if ($issuedBooks->isEmpty()) {
+            return response()->json([
+                'message' => 'No issued books found for this user.',
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Issued books retrieved successfully.',
+            'issued_books' => $issuedBooks, 'status'=>true
+        ], 200);
+    }
+
     public function returnBook(Request $request)
     {
         
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'qrcode' => 'required|string',          
             'user_id' => 'required',          
             'book_id' => 'required|integer|exists:books,id', 
-            // 'number' =>'required',
-            // 'area' =>'required',
-            // 'approve_date' =>'required',    
+            
         ]);
 
-        $bookshelf = Bookshelve::where('qrcode', $validated['qrcode'])
-        // ->where('number', $validated['number'])
-        //    -> where('area', $validated['area'])
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors(),'status' => false], 400);
+        }
+        $bookshelf = Bookshelve::where('qrcode', $request->qrcode)
         ->first();
 
         if (!$bookshelf) {
-            return response()->json(['message' => 'No bookshelf found for the provided QR code.'], 404);
+            return response()->json(['message' => 'No bookshelf found for the provided QR code.','status' => false], 404);
         }
 
         $book = Book::where('bookshelves_id', $bookshelf->id)
-                    ->where('id', $validated['book_id']) 
+                    ->where('id', $request->book_id) 
                     ->first();
 
         if (!$book) {
-            return response()->json(['message' => 'No book found on the provided bookshelf.'], 404);
+            return response()->json(['message' => 'No book found on the provided bookshelf.','status' => false], 404);
         }
 
         $issueBook = IssueBook::where([
             'book_id' => $book->id, 
             'user_id' => $request->user_id,
-            // 'approve_date' => $request->approve_date,
         ])->first();
 
         if (!$issueBook) {
-            return response()->json(['message' => 'No active issue record found for this book or the book has already been returned.'], 404);
+            return response()->json(['message' => 'No active issue record found for this book or the book has already been returned.','status' => false], 404);
         }
 
         $issueBook->update([
@@ -136,34 +165,54 @@ class IssueBookController extends Controller
             'return_date' => Carbon::now()->toDateString(), 
         ]);
 
+        $admin = User::find(3);
+        if ($admin) {
+            $admin->notify(new BookReturnedNotification($issueBook));
+            $notifications = $admin->notifications;
+            $unreadNotifications = $admin->unreadNotifications;
+        }
         return response()->json([
             'message' => 'Book return status updated successfully.',
             'data' => $issueBook,
-            'shelve_data'=>$bookshelf
-        ]);
+            'shelve_data'=>$bookshelf,
+            'notifications'=>$notifications,
+             'status'=>true
+        ],200);
     }
 
 
     public function transferBook(Request $request)
     {
        
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'book_id' => 'required',
             'from_user_id' => 'required', 
             'to_user_id' => 'required',   
         ]);
+
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors(),'status' => false], 400);
+        }
    
         $data = BookTransfer::create([
             'is_transfer' => 1,
-            'from_user_id' => $validated['from_user_id'],
-            'to_user_id' => $validated['to_user_id'],
+            'from_user_id' => $request->from_user_id,
+            'to_user_id' => $request->to_user_id,
             'transfer_date' => now()->toDateString(),
         ]);
         
         return response()->json([
             'message' => 'Book transfer status updated successfully.',
-            'data' => $issueBook
-        ]);
+            'data' => $issueBook, 
+            'status'=>true
+        ],200);
+        if (!$data) {
+            return response()->json([
+                'message' => 'Failed to book transfer status updated ',
+                'status' => false
+            ], 500); 
+        }
     }
     
     
