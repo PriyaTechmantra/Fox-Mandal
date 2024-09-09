@@ -25,9 +25,9 @@ class NotificationController extends Controller
         if ($user) {
             $user->fcm_token = $request->fcm_token;
             $user->save();
-            return response()->json(['success' => 'Token saved successfully', 'status'=>true]);
+            return response()->json(['success' => 'Token saved successfully', 'status'=>true],201);
         }
-        return response()->json(['error' => 'User not found'], 404);
+        return response()->json(['error' => 'User not found','status' => false], 404);
     }
 
 
@@ -91,13 +91,15 @@ class NotificationController extends Controller
        
         $userId = $request->input('receiver_id');
 
-        $books = LmsNotification::where('receiver_id', $userId)->with('book')
+        $data = LmsNotification::where('receiver_id', $userId)->with('book')
             ->get();
 
-       
+        if (!$data) {
+            return response()->json(['message' => 'Notification not found', 'status'=>false], 404);
+        }
         return response()->json([
             'message' => 'List of book of user',
-            'data' =>$books, 
+            'data' =>$data, 
             'status'=>true
         ], 200);
     }
@@ -116,7 +118,7 @@ class NotificationController extends Controller
 
     $notification = LmsNotification::find($id);
     if (!$notification) {
-        return response()->json(['message' => 'Notification not found', 'status'=>true], 200);
+        return response()->json(['message' => 'Notification not found', 'status'=>false], 404);
     }
 
     $notification->is_read = true;
