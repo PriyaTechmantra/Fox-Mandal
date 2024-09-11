@@ -582,7 +582,7 @@ class BookController extends Controller
                                     
                                     ->where('books.office_id',$id)
                                     ->distinct()
-                                    ->get();
+                                    ->paginate(25);
                                  // dd($data);
        $office=Office::where('id',$id)->first();
        $category=BookCategory::all();
