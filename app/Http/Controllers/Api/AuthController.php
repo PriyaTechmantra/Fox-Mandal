@@ -50,10 +50,10 @@ class AuthController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'OTP sent successfully',
-                'data' => $updateSuccessful
-                // 'name' => $user->name,
-                // 'email' => $user->email,
-                // 'mobile' => $user->mobile
+                'name' => $user->name,
+                'email' => $user->email,
+                'mobile' => $user->mobile,
+                'otp' => $user->otp
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack(); 

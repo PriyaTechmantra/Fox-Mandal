@@ -14,7 +14,7 @@ class BookShelveController extends Controller
   
         $qrcode = $request->input('qrcode');
 
-        $book = Bookshelve::where('qrcode', $qrcode)
+        $book = Bookshelve::where('qrcode', $qrcode)->with('office')
             ->get();
         if($book->isEmpty()) {
             return response()->json([

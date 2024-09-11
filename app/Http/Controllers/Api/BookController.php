@@ -12,7 +12,7 @@ class BookController extends Controller
 {
     public function index(Request $request)
     {
-        $books = Book::get();
+        $books = Book::with(['office','bookshelve','category'])->get();
         if ($books) {
              return response()->json(['status'=>true,'message' => 'List of book','data' => $books ], 200);
         }else {
@@ -25,7 +25,7 @@ class BookController extends Controller
 
     public function bookWithIssuedBook(Request $request)
     {
-        $books = Book::with('issuebook')->get();
+        $books = Book::with(['office','bookshelve','category','issuebook.user'])->get();
         if ($books) {
             return response()->json(['status'=>true,'message' => 'List of book with issue details','data' => $books, ], 200);
         }else {
@@ -39,7 +39,7 @@ class BookController extends Controller
     {
   
         try {
-            $book = Book::findOrFail($request->id);
+            $book = Book::with(['office','bookshelve','category'])->findOrFail($request->id);
             if ($book) {
             return response()->json([
                 'status'=>true,
@@ -65,49 +65,43 @@ class BookController extends Controller
 
     public function search(Request $request)
     {
-        try{
-            $title = $request->input('title');
-            $publisher = $request->input('publisher');
-            $author = $request->input('author');
-            $uid = $request->input('uid');
-
+        try {
+            $keyword = $request->input('keyword'); 
+    
             $books = Book::query();
-
-            if ($title) {
-                $books->where('title', 'LIKE', "%{$title}%");
+    
+            if ($keyword) {
+                $books->where(function ($query) use ($keyword) {
+                    $query->where('title', 'LIKE', "%{$keyword}%")
+                          ->orWhere('publisher', 'LIKE', "%{$keyword}%")
+                          ->orWhere('author', 'LIKE', "%{$keyword}%")
+                          ->orWhere('uid', 'LIKE', "%{$keyword}%");
+                });
             }
-            if ($publisher) {
-                $books->where('publisher', 'LIKE', "%{$publisher}%");
-            }
-            if ($author) {
-                $books->where('author', 'LIKE', "%{$author}%");
-            }
-            if ($uid) {
-                $books->where('uid', 'LIKE', "%{$uid}%");
-            }
-
-            $books = $books->with('issuebook')->get();
-            if ($books) {
+    
+            $books = $books->with('category','office','bookshelve','issuebook.user')->get();
+    
+            if ($books->isNotEmpty()) {
                 return response()->json([
-                    'status'=>true,
-                    'message' => 'List of search data', 
+                    'status' => true,
+                    'message' => 'List of search data',
                     'data' => $books
                 ], 200);
-            }else {
+            } else {
                 return response()->json([
                     'status' => false,
                     'message' => 'No data found'
-                ], 401);
+                ], 404);
             }
         } catch (\Exception $e) {
-            DB::rollBack(); 
-            Log::error('Book transfer error: ' . $e->getMessage());
+            Log::error('Book search error: ' . $e->getMessage());
             return response()->json([
-                'message' => 'An error occurred during the book transfer.',
+                'message' => 'An error occurred during the search.',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
+    
 
 
     public function searchDetailsByQrCode(Request $request)
@@ -115,7 +109,7 @@ class BookController extends Controller
         try{
             $qrcode = $request->input('qrcode');
 
-            $book = Book::where('qrcode', $qrcode)->with('category')->with('bookshelves')
+            $book = Book::where('qrcode', $qrcode)->with(['category','office','bookshelve'])
                 ->first();
             if ($book) {
                 return response()->json([
