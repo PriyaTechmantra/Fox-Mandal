@@ -42,7 +42,7 @@
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                                             </a>
                                                             @can('book csv export')
-                                                            <a href="{{ url('books/issue/list/export/csv') }}" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Export data in CSV">
+                                                            <a href="{{ url('books/issue/list/export/csv') . '?issue_date_from=' . $request->issue_date_from. '&issue_date_to=' .$request->issue_date_from}}" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Export data in CSV">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                                                 CSV
                                                             </a>
@@ -75,16 +75,16 @@
                             <tbody>
                                 @foreach ($data as $index=> $item)
                                 @php
-                                $transfer=\App\Model\BookTransfer::where('book_id',$book->id)->where('from_user_id',$item->user_id)->with('toUser')->first();   
+                                $transfer=\App\Models\BookTransfer::where('book_id',$book->id)->where('from_user_id',$item->user_id)->with('toUser')->first();   
                                 @endphp
                                 <tr>
                                     <td>{{ $index+1 }}</td>
                                     <td>{{ $item->user->name ??''}}</td>
                                     <td>{{ $item->user->mobile ??''}}</td>
                                     <td>{{ $item->user->email }}</td>
-                                    <td>{{ $item->request_date }}</td>
-                                    <td>{{ $item->approve_date }}</td>
-                                    <td>{{ $item->return_date }}</td>
+                                    <td>@if(!empty($item->request_date)){{ date('j M Y', strtotime($item->request_date)) ??''}}@endif</td>
+                                    <td>@if(!empty($item->approve_date)){{ date('j M Y', strtotime($item->approve_date)) ??'' }}@endif</td>
+                                    <td>@if(!empty($item->return_date)){{ date('j M Y', strtotime($item->return_date)) ??''}}@endif</td>
                                     @if($item->return_date==NUll && !empty($transfer))
                                     <td>Transfer to {{$transfer->toUser->name ??''}}</td>
                                     @else

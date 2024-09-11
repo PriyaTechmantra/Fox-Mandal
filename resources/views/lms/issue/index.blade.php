@@ -66,31 +66,36 @@
                                     <th>Member Name</th>
                                     <th>Book Name</th>
                                     <th>Issue request date</th>
+                                    <th>Approval Status</th>
                                     <th>Approval</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($data as $index=> $item)
                                 @php
-                                $transfer=\App\Model\BookTransfer::where('book_id',$book->id)->where('from_user_id',$item->user_id)->with('toUser')->first();   
+                                $transfer=\App\Models\BookTransfer::where('book_id',$item->id)->where('from_user_id',$item->user_id)->with('toUser')->first();   
                                 @endphp
                                 <tr>
                                     <td>{{ $index+1 }}</td>
                                     <td><a href="{{ url('members/'.$item->user->id) }}">{{ $item->user->name ??''}}</a></td>
                                     <td><a href="{{ url('books/'.$item->book->id) }}">{{ $item->book->title ??''}}</a></td>
                                     <td><span class="text-dark font-weight-bold mb-2">
-                                            {{date('j M Y g:i A', strtotime($item->request_date))}}
+                                            {{date('j M Y', strtotime($item->request_date))}}
                                         </span></td>
+                                        <td>@if($item->status === 1)
+                    							 <span class="badge bg-success">Approved</span>
+                    						@elseif($item->status === 0)
+                    							 <span class="badge bg-danger">Rejected</span>
+                    						@elseif($item->status === null)
+                    						<span class="badge bg-warning">Waiting for approval</span>
+                    						@endif</td>
                                     <td>
                 							<div class="btn-group" role="group">
                 								<a href="{{ url('issues/books/'.$item->id.'/status/change', [$item->id, 1]) }}" type="button" class="status_1 btn btn-outline-primary btn-sm {{($item->status == 1) ? 'active' : ''}}">Approved</a>
                 
                 								<a href="{{ url('issues/books/'.$item->id.'/status/change', [$item->id, 0]) }}" type="button" class="status_2 btn btn-outline-danger btn-sm {{($item->status == 0) ? 'active' : ''}}">Rejected</a>
                 							</div>
-                    						@if($item->status == 1)
-                    							 <span class="badge bg-success">Approved</span>
-                    						@else <span class="badge bg-danger">Rejected</span>
-                    						@endif
+                    						
             						</td>
                                 </tr>
                                 @endforeach
@@ -105,25 +110,7 @@
 
 
 
-<div class="modal fade" id="csvModal" data-backdrop="static">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                Bulk Upload
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="{{ url('books/upload/csv') }}" enctype="multipart/form-data">@csrf
-                    <input type="file" name="file" class="form-control" accept=".csv">
-                    <br>
-                    <a href="{{ asset('backend/csv/sample-book.csv') }}">Download Sample CSV</a>
-                    <br>
-                    <button type="submit" class="btn btn-danger mt-3" id="csvImportBtn">Import <i class="fas fa-upload"></i></button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+
 @endsection
 
 

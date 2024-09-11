@@ -54,4 +54,16 @@ class IssueController extends Controller
         return view('lms.issue.index',compact('data','office','request','bookshelve','category'))
             ->with('i', (request()->input('page', 1) - 1) * 5);
     }
+    
+    
+    public function status(Request $request,$id,$status)
+    {
+		//dd($request->status);
+        $updatedEntry = IssueBook::findOrFail($id);
+        $updatedEntry->status = $status;
+		$updatedEntry->approve_date = date('Y-m-d');
+        $updatedEntry->save();
+		
+       return redirect()->back()->with('success', 'Book status updated');
+    }
 }

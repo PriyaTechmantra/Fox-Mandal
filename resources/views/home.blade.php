@@ -40,7 +40,8 @@
                     <h3>Total Issued Books per Office</h3>
                         <ul>
                             @foreach($issuedBooksPerOffice as $office)
-                                <a href="{{ url('offices/'.$office->id.'/issue/books/') }}"><li>{{ $office->name }}({{ $office->address }}): {{ $office->total_issued }} issued books</li></a>
+                            
+                                <a href="{{ url('offices/issue/books/'.$office->office_id.'/list') }}"><li>{{ $office->name }}({{ $office->address }}): {{ $office->total_issued }} issued books</li></a>
                             @endforeach
                         </ul>
                 </div>

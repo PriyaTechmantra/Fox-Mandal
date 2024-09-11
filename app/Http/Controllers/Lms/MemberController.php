@@ -64,6 +64,14 @@ class MemberController extends Controller
             'user' => $user
         ]);
     }
+    
+    public function show($id)
+    {
+        $user=User::findOrfail($id);
+        return view('lms.member.view', [
+            'user' => $user
+        ]);
+    }
 
     public function update(Request $request, User $user)
     {
