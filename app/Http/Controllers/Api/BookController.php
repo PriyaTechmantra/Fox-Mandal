@@ -199,7 +199,7 @@ class BookController extends Controller
         if ($books) {
         return response()->json([
             'status'=>true,
-            'message' => 'Book list by shelve QR-code wise', 
+            'message' => 'Book list by shelve number wise', 
             
             'books' => $books->map(function ($book) {
                 return [
