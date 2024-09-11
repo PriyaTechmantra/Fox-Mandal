@@ -139,7 +139,7 @@ class IssueBookController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors(),'status' => false], 400);
         }
-        $bookshelf = Bookshelve::where('qrcode', $request->qrcode)
+        $bookshelf = Bookshelve::where('qrcode', $request->qrcode)->with('office')
         ->first();
 
         if (!$bookshelf) {

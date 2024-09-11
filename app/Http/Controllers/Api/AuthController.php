@@ -52,7 +52,8 @@ class AuthController extends Controller
                 'message' => 'OTP sent successfully',
                 'name' => $user->name,
                 'email' => $user->email,
-                'mobile' => $user->mobile
+                'mobile' => $user->mobile,
+                'otp' => $user->otp
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack(); 
