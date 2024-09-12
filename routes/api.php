@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\BookShelveController;
 use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\BookTransferController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\Fms\CabBookingController;
 
 
 /*
@@ -61,6 +62,16 @@ Route::post('/save-fcm-token', [NotificationController::class, 'saveToken']);
 Route::post('/save-notification', [NotificationController::class, 'Notification']);
 Route::get('/notification-list-by-user', [NotificationController::class, 'notificationListByUser']);
 Route::post('/notification-read', [NotificationController::class, 'markAsRead']);
+
+
+Route::prefix('cab_bookings')->group(function () {
+    // Route::get('/', [BookingController::class, 'index']);            
+    // Route::get('/{id}', [BookingController::class, 'show']);         
+    Route::post('/store', [CabBookingController::class, 'store']);           
+    Route::put('/{id}', [CabBookingController::class, 'update']);      
+    Route::delete('/{id}', [CabBookingController::class, 'destroy']);  
+});
+
 
 
 
