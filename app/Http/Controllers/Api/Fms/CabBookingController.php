@@ -16,6 +16,8 @@ class CabBookingController extends Controller
         'user_id' => 'required|exists:users,id',
         'booking_type' => 'required|integer|in:1,2,3',
         'from_location' => 'required|string|max:255',
+        'bill_to' => 'required|integer|in:1,2,3',
+        'cab_type' => 'required|integer|in:1,2,3',
         'to_location' => [
             'required_if:booking_type,1,3',
             'nullable',
@@ -51,11 +53,11 @@ class CabBookingController extends Controller
     $validatedData = $validator->validated();
 
     $departureDate = isset($validatedData['departure_date'])
-        ? Carbon::parse($validatedData['departure_date'])->format('Y-m-d')
+        ? Carbon::parse($validatedData['departure_date'])->format('Y-m-d l')
         : null;
 
     $pickupDate = isset($validatedData['pickup_date'])
-        ? Carbon::parse($validatedData['pickup_date'])->format('Y-m-d')
+        ? Carbon::parse($validatedData['pickup_date'])->format('Y-m-d l')
         : null;
 
     $pickupTime = isset($validatedData['pickup_time'])
@@ -64,13 +66,15 @@ class CabBookingController extends Controller
 
     $booking = CabBooking::create([
         'user_id' => $validatedData['user_id'],
+        'bill_to' => $validatedData['bill_to'],
+        'cab_type' => $validatedData['cab_type'],
         'booking_type' => $validatedData['booking_type'],
         'from_location' => $validatedData['from_location'],
-        'to_location' => $validatedData['to_location'],
+        'to_location' => $validatedData['to_location']?? null,
         'departure_date' => $departureDate,
         'pickup_date' => $pickupDate,
         'pickup_time' => $pickupTime,
-        'hours' => $validatedData['hours'],
+        'hours' => $validatedData['hours']?? null,
     ]);
 
     if (!$booking) {

@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('cab_bookings', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
+            $table->tinyInteger('bill_to')->comment('1 = company, 2 = client, 3 = matter expenses');
             $table->tinyInteger('booking_type')->comment('1 = one_way, 2 = hourly_rental, 3 = airport_transfer');
+            $table->tinyInteger('cab_type')->comment('1 = hatchback, 2 = sedan, 3 = suv');
             $table->string('from_location');
             $table->string('to_location')->nullable();
-            // $table->date('departure_date')->nullable();
             $table->string('departure_date')->nullable();
             $table->string('pickup_date')->nullable();
-
             $table->time('pickup_time');
             $table->integer('hours')->nullable();
             $table->timestamps();

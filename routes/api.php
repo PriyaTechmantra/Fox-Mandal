@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\BookTransferController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\Fms\CabBookingController;
+use App\Http\Controllers\Api\Fms\FlightBookingController;
+use App\Http\Controllers\Api\Fms\TrainBookingController;
 
 
 /*
@@ -68,8 +70,16 @@ Route::prefix('cab_bookings')->group(function () {
     // Route::get('/', [BookingController::class, 'index']);            
     // Route::get('/{id}', [BookingController::class, 'show']);         
     Route::post('/store', [CabBookingController::class, 'store']);           
-    Route::put('/{id}', [CabBookingController::class, 'update']);      
-    Route::delete('/{id}', [CabBookingController::class, 'destroy']);  
+    // Route::put('/{id}', [CabBookingController::class, 'update']);      
+    // Route::delete('/{id}', [CabBookingController::class, 'destroy']);  
+});
+
+Route::prefix('flight_bookings')->group(function () {
+    Route::post('/store', [FlightBookingController::class, 'store']);           
+});
+
+Route::prefix('train_bookings')->group(function () {
+    Route::post('/store', [TrainBookingController::class, 'store']);           
 });
 
 
