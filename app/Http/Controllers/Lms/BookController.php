@@ -111,13 +111,13 @@ class BookController extends Controller
         $data->bookshelves_id=$request['bookshelves_id'];
         $data->category_id=$request['category_id'];
         $data->user_id=Auth::user()->id;
-        $data->title=$request['title'];
-        $data->uid=$request['uid'];
-        $data->author=$request['author'];
-        $data->publisher=$request['publisher'];
-        $data->edition=$request['edition'];
-        $data->page=$request['page'];
-        $data->quantity=$request['quantity'];
+        $data->title=$request['title']??'';
+        $data->uid=$request['uid']??'';
+        $data->author=$request['author']??'';
+        $data->publisher=$request['publisher']??'';
+        $data->edition=$request['edition']??'';
+        $data->page=$request['page']??'';
+        $data->quantity=$request['quantity']??'';
         $data->qrcode=strtoupper(generateUniqueAlphaNumeric(10));
         $data->save();
         return redirect()->route('books.index')

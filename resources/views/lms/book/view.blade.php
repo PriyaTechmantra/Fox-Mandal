@@ -19,15 +19,18 @@
                     <div class="card-header">
                         <h4>Books Detail
                             <a href="{{ url('books') }}" class="btn btn-danger float-end">Back</a>
-                            <a type="button" id="basic" class="btn btn-danger float-end">Download Qrcode</a>
+                           <a type="button" onclick="printQRCode('{{ $data->id }}', '{{ $data->title }}', '{{ $data->qrcode }}')" class="btn btn-danger float-end">Print QR</a>
                         </h4>
                     </div>
                     <div class="card-body">
-                        <table class="">
-                                <tr>
-                                    <td class="text-muted">Office: </td>
-                                    <td>{{$data->office->name}}</td>
-                                </tr>
+                        <div class="table-responsive">
+                            <table class="">
+                                 <div class="user-info">
+                                    <tr>
+                                        <td class="text-muted">Office: </td>
+                                        <td>{{$data->office->name}}</td>
+                                    </tr>
+                                 </div>
                                 <tr>
                                     <td class="text-muted">Office Location: </td>
                                     <td>{{ $data->office->address ??''}}</td>
@@ -42,7 +45,7 @@
                                     <td>{{$data->category->name}}</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-muted">Uid : </td>
+                                    <td class="text-muted">UID : </td>
                                     <td>{{ $data->uid ??''}}</td>
                                 </tr>
                                 <tr>
@@ -78,14 +81,19 @@
                                     <td>{{ $data->user->name ??'' }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-muted">Qrcode: </td>
-                                    <td><img src="https://bwipjs-api.metafloor.com/?bcid=qrcode&text={{$data->qrcode}}&height=6&textsize=10&scale=6&includetext" alt="" style="height: 105px;width:105px" id="{{$data->qrcode}}"></td>
+                                    <td class="text-muted">QR: </td>
+                                    <td><img src="https://bwipjs-api.metafloor.com/?bcid=qrcode&text={{$data->qrcode}}&height=6&textsize=10&scale=6&includetext" 
+                                                 alt="QR Code" 
+                                                 style="height: 105px;width:105px" 
+                                                 id="qr-{{$data->id}}" 
+                                                 data-qrcode="{{ $data->qrcode }}"></td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted">Created At: </td>
                                     <td>{{ date('j M Y h:m A', strtotime($data->created_at)) }}</td>
                                 </tr>
                             </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -128,5 +136,63 @@
             });
             });
         });
+        
+        
+        function printQRCode(itemId, bookTitle, qrText) {
+        // Open a new window for printing
+        const printWindow = window.open('', '', 'width=600,height=400');
+        const qrSrc = `https://bwipjs-api.metafloor.com/?bcid=qrcode&text=${qrText}&height=6&textsize=10&scale=6&includetext`;
+
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Print QR</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        text-align: center;
+                    }
+                    .print-container {
+                        margin-top: 20px;
+                    }
+                    .book-title {
+                        font-size: 20px;
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                    }
+                    .qr-code {
+                        margin-top: 10px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="print-container">
+                    <!-- Book Name -->
+                    <div class="book-title">Book Name: ${bookTitle}</div>
+                    <!-- QR Code Placeholder -->
+                    <div class="qr-code">
+                        <img id="qr-code-img" src="${qrSrc}" style="height: 150px; width: 150px;">
+                    </div>
+                </div>
+            </body>
+            </html>
+        `);
+
+        // Wait for the image to load before printing
+        const qrCodeImg = printWindow.document.getElementById('qr-code-img');
+        qrCodeImg.onload = function () {
+            // Once the image is loaded, trigger the print
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        };
+
+        // If the image fails to load, close the window
+        qrCodeImg.onerror = function () {
+            alert('QR code could not be loaded.');
+            printWindow.close();
+        };
+    }
 </script>
 @endsection
