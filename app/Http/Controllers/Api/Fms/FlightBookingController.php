@@ -18,6 +18,8 @@ class FlightBookingController extends Controller
             'from' => 'required|string|max:255',
             'to' => 'required|string|max:255', 
             'departure_date' => 'required|date',
+            'preference_departure_date' => 'required|date',
+            'preference_arrival_time' =>'required||date_format:h:i A',
             'return_date' => 'required_if:trip_type,2|nullable|date',
             'traveler_number' => 'required|integer|min:1',
             'bill_to' => 'required|integer|in:1,2,3', 
@@ -35,11 +37,18 @@ class FlightBookingController extends Controller
         $departureDate = isset($validatedData['departure_date'])
             ? Carbon::parse($validatedData['departure_date'])->format('Y-m-d l')
             : null;
+
+        $preferenceDepartureDate = isset($validatedData['preference_departure_date'])
+           ? Carbon::parse($validatedData['preference_departure_date'])->format('Y-m-d l')
+           : null;
     
         $returnDate = isset($validatedData['return_date'])
             ? Carbon::parse($validatedData['return_date'])->format('Y-m-d l')
             : null;
-    
+
+        $preferenceArrivalTime = isset($validatedData['preference_arrival_time'])
+            ? Carbon::createFromFormat('h:i A', $validatedData['preference_arrival_time'])->format('H:i:s')
+            : null;
     
         $flightBooking = FlightBooking::create([
             'user_id' => $validatedData['user_id'],
@@ -47,6 +56,8 @@ class FlightBookingController extends Controller
             'from' => $validatedData['from'],
             'to' => $validatedData['to'],
             'departure_date' => $departureDate,
+            'preference_departure_date' => $preferenceDepartureDate,
+            'preference_arrival_time' => $preferenceArrivalTime,
             'return_date' => $returnDate?? null, 
             'traveler_number' => $validatedData['traveler_number'],
             'bill_to' => $validatedData['bill_to'],

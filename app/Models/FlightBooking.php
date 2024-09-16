@@ -17,7 +17,9 @@ class FlightBooking extends Model
         'departure_date', 
         'return_date',     
         'traveler_number',  
-        'bill_to',        
+        'bill_to',  
+        'preference_arrival_time',  
+        'preference_departure_date'    
     ];
 
     public function user()

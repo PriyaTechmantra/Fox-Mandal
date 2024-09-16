@@ -18,7 +18,7 @@ class BookController extends Controller
         }else {
             return response()->json([
                 'status' => false,
-                'message' => 'Book list found'
+                'message' => 'Book list not found'
             ], 404);
         }
     }
@@ -31,7 +31,7 @@ class BookController extends Controller
         }else {
             return response()->json([
                 'status' => false,
-                'message' => 'Book list found'
+                'message' => 'Book list not found'
             ], 404);
         }
     }

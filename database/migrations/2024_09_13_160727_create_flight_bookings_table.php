@@ -17,6 +17,8 @@ return new class extends Migration
             $table->tinyInteger('trip_type')->comment('1 = one way, 2 = round trip'); 
             $table->string('from'); 
             $table->string('to'); 
+            $table->string('preference_departure_date'); 
+            $table->string('preference_arrival_time'); 
             $table->string('departure_date'); 
             $table->string('return_date')->nullable(); 
             $table->unsignedInteger('traveler_number'); 

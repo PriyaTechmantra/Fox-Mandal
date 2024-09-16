@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\Fms\CabBookingController;
 use App\Http\Controllers\Api\Fms\FlightBookingController;
 use App\Http\Controllers\Api\Fms\TrainBookingController;
+use App\Http\Controllers\Api\Fms\HotelBookingController;
+
 
 
 /*
@@ -82,6 +84,14 @@ Route::prefix('train_bookings')->group(function () {
     Route::post('/store', [TrainBookingController::class, 'store']);           
 });
 
+
+Route::prefix('hotel_bookings')->group(function () {
+    Route::post('/store', [HotelBookingController::class, 'store']);
+});
+
+Route::get('/room_list', [HotelBookingController::class, 'roomList']);
+Route::get('/property_list', [HotelBookingController::class, 'propertyList']);
+Route::get('/booked_hotel_list', [HotelBookingController::class, 'userRoomBookings']);
 
 
 
