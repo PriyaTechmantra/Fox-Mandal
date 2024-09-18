@@ -21,7 +21,8 @@ class HotelBookingController extends Controller
             'checkin_date' => 'required|date',
             'checkout_date' => 'required|date|after:checkin_date',
             'guest_number' => 'required|integer|min:1',
-            'room_number' => 'required|integer|min:1'
+            'room_number' => 'required|integer|min:1',
+            'bill_to' => $validatedData['bill_to']
             
         ]);
     
@@ -42,6 +43,7 @@ class HotelBookingController extends Controller
             'checkout_date' => $checkoutDate, 
             'guest_number' => $validatedData['guest_number'],
             'room_number' => $validatedData['room_number'],
+            'bill_to' => $validatedData['bill_to'],
 
         ]);
     

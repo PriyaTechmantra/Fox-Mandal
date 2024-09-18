@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('guest_number');
             $table->integer('room_number');
             $table->tinyInteger('status')->default(0)->comment('0 = pending, 1 = confirmed, 2 = cancelled');
+            $table->tinyInteger('bill_to')->comment('1 = company, 2 = client, 3 = matter expenses');
             $table->foreign('room_id')->references('id')->on('rooms')->onDelete('cascade');
             $table->foreign('property_id')->references('id')->on('properties')->onDelete('cascade');
             $table->timestamps();
