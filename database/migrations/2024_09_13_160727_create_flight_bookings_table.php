@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('return_date')->nullable(); 
             $table->unsignedInteger('traveler_number'); 
             $table->tinyInteger('bill_to')->comment('1 = company, 2 = client, 3 = matter expenses');
+            $table->tinyInteger('status')->default(0)->comment('0 = pending, 1 = confirmed, 2 = cancelled');
             $table->timestamps(); 
         });
     }

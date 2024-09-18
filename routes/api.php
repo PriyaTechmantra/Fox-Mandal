@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Fms\CabBookingController;
 use App\Http\Controllers\Api\Fms\FlightBookingController;
 use App\Http\Controllers\Api\Fms\TrainBookingController;
 use App\Http\Controllers\Api\Fms\HotelBookingController;
+use App\Http\Controllers\Api\Fms\BookingHistoryController;
 
 
 
@@ -95,5 +96,12 @@ Route::get('/booked_hotel_list', [HotelBookingController::class, 'userRoomBookin
 
 
 
+Route::get('bookings_history', [BookingHistoryController::class, 'getBookingHistory']);
 
 
+Route::prefix('cancel_bookings')->group(function () {
+    Route::post('/train', [TrainBookingController::class, 'cancelTrainBooking']);
+    Route::post('/flight', [FlightBookingController::class, 'cancelFlightBooking']);
+    Route::post('/cab', [CabBookingController::class, 'cancelCabBooking']);
+    Route::post('/hotel', [HotelBookingController::class, 'cancelHotelBooking']);
+});

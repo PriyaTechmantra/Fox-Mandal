@@ -76,4 +76,39 @@ class FlightBookingController extends Controller
             'data' => $flightBooking,
         ], 201);
     }
+
+    public function cancelFlightBooking(Request $request)
+    {
+        $id = $request->id;
+
+        $validator = Validator::make(['id' => $id], [
+            'id' => 'required|integer|exists:flight_bookings,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors(),
+            ], 400);
+        }
+
+        $flightBooking = FlightBooking::find($id);
+
+        if ($flightBooking->status == 2) {
+            return response()->json([
+                'status' => false,
+                'message' => 'This flight booking is already cancelled.'
+            ], 400);
+        }
+
+        $flightBooking->status = 2;
+        $flightBooking->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Flight booking cancelled successfully.',
+            'data' => $flightBooking
+        ], 200);
+    }
+
 }

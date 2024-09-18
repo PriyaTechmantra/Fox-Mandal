@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('checkin_date');
             $table->string('checkout_date'); 
             $table->integer('guest_number');
+            $table->integer('room_number');
             $table->tinyInteger('status')->default(0)->comment('0 = pending, 1 = confirmed, 2 = cancelled');
             $table->foreign('room_id')->references('id')->on('rooms')->onDelete('cascade');
             $table->foreign('property_id')->references('id')->on('properties')->onDelete('cascade');

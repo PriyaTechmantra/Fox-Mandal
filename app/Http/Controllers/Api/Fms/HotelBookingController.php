@@ -20,7 +20,9 @@ class HotelBookingController extends Controller
             'property_id' => 'required|exists:properties,id',
             'checkin_date' => 'required|date',
             'checkout_date' => 'required|date|after:checkin_date',
-            'guest_number' => 'required|integer|min:1'
+            'guest_number' => 'required|integer|min:1',
+            'room_number' => 'required|integer|min:1'
+            
         ]);
     
         if ($validator->fails()) {
@@ -39,6 +41,8 @@ class HotelBookingController extends Controller
             'checkin_date' => $checkinDate,  
             'checkout_date' => $checkoutDate, 
             'guest_number' => $validatedData['guest_number'],
+            'room_number' => $validatedData['room_number'],
+
         ]);
     
         return response()->json(['status' => true, 'message' => 'Booking created successfully', 'data' => $booking], 201);
@@ -93,6 +97,41 @@ class HotelBookingController extends Controller
             'data' => $bookings,
         ], 200);
     }
+
+    public function cancelHotelBooking(Request $request)
+    {
+        $id = $request->id;
+
+        $validator = Validator::make(['id' => $id], [
+            'id' => 'required|integer|exists:hotel_bookings,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors(),
+            ], 400);
+        }
+
+        $hotelBooking = HotelBooking::find($id);
+
+        if ($hotelBooking->status == 2) {
+            return response()->json([
+                'status' => false,
+                'message' => 'This hotel booking is already cancelled.'
+            ], 400);
+        }
+
+        $hotelBooking->status = 2;
+        $hotelBooking->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Hotel booking cancelled successfully.',
+            'data' => $hotelBooking
+        ], 200);
+    }
+
 
     
 }

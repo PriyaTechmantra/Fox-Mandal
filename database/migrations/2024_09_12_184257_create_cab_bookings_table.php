@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('pickup_date')->nullable();
             $table->time('pickup_time');
             $table->integer('hours')->nullable();
+            $table->tinyInteger('status')->default(0)->comment('0 = pending, 1 = confirmed, 2 = cancelled');
             $table->timestamps();
         });
     }

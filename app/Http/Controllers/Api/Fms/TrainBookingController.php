@@ -52,4 +52,48 @@ class TrainBookingController extends Controller
             'data' => $trainBooking,
         ], 201);
     }
+
+    public function cancelTrainBooking(Request $request)
+    {
+        $id = $request->id;
+    
+        $validator = Validator::make(['id' => $id], [
+            'id' => 'required|integer|exists:train_bookings,id',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors(),
+            ], 400);
+        }
+    
+        $trainBooking = TrainBooking::find($id);
+    
+        if ($trainBooking->status == 2) {
+            return response()->json([
+                'status' => false,
+                'message' => 'This booking is already cancelled.'
+            ], 400);
+        }
+    
+        $trainBooking->status = 2;
+        $trainBooking->save();
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Booking cancelled successfully.',
+            'data' => $trainBooking
+        ], 200);
+
+        if (!$trainBooking) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to cancelled booking, please try again later'
+            ], 500);
+        }
+    }
+    
+
+
 }
