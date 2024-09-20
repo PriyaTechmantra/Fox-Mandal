@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\Fms\FlightBookingController;
 use App\Http\Controllers\Api\Fms\TrainBookingController;
 use App\Http\Controllers\Api\Fms\HotelBookingController;
 use App\Http\Controllers\Api\Fms\BookingHistoryController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\CategoryController;
 
 
 
@@ -36,8 +38,16 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('login', [AuthController::class, 'sendOtp']);
 Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
+Route::get('member-details', [UserController::class, 'show']);
+Route::get('search-member', [UserController::class, 'searchMember']);
+
+
+Route::get('/category/list', [CategoryController::class, 'index']);
+
+
 Route::get('/books/search', [BookController::class, 'search']);
 Route::get('/books/list', [BookController::class, 'index']);
+Route::get('/active-books/list', [BookController::class, 'activeBookList']);
 Route::get('/books/list/with-issuedbook', [BookController::class, 'bookWithIssuedBook']);
 Route::get('/books/detail', [BookController::class, 'bookDetails']);
 Route::get('/books/details-by-qrcode', [BookController::class, 'searchDetailsByQrCode']);

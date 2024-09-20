@@ -23,6 +23,19 @@ class BookController extends Controller
         }
     }
 
+    public function activeBookList(Request $request)
+    {
+        $books = Book::where('status',1)->with(['office','bookshelve','category'])->get();
+        if ($books) {
+             return response()->json(['status'=>true,'message' => 'List of book','data' => $books ], 200);
+        }else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Book list not found'
+            ], 404);
+        }
+    }
+
     public function bookWithIssuedBook(Request $request)
     {
         $books = Book::with(['office','bookshelve','category','issuebook.user'])->get();
@@ -63,24 +76,25 @@ class BookController extends Controller
     }
    
 
+  
     public function search(Request $request)
     {
         try {
             $keyword = $request->input('keyword'); 
-    
-            $books = Book::query();
-    
+
+            $books = Book::where('status', 1);
+
             if ($keyword) {
                 $books->where(function ($query) use ($keyword) {
                     $query->where('title', 'LIKE', "%{$keyword}%")
-                          ->orWhere('publisher', 'LIKE', "%{$keyword}%")
-                          ->orWhere('author', 'LIKE', "%{$keyword}%")
-                          ->orWhere('uid', 'LIKE', "%{$keyword}%");
+                        ->orWhere('publisher', 'LIKE', "%{$keyword}%")
+                        ->orWhere('author', 'LIKE', "%{$keyword}%")
+                        ->orWhere('uid', 'LIKE', "%{$keyword}%");
                 });
             }
-    
-            $books = $books->with('category','office','bookshelve','issuebook.user')->get();
-    
+
+            $books = $books->with('category', 'office', 'bookshelve', 'issuebook.user')->get();
+
             if ($books->isNotEmpty()) {
                 return response()->json([
                     'status' => true,
@@ -101,6 +115,7 @@ class BookController extends Controller
             ], 500);
         }
     }
+
     
 
 
