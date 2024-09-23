@@ -54,7 +54,11 @@ Route::get('/books/details-by-qrcode', [BookController::class, 'searchDetailsByQ
 Route::get('/books/category-wise-list', [BookController::class, 'CategoryWiseBookList']);
 
 
-Route::middleware('api')->post('/issue-books', [IssueBookController::class, 'store']);
+Route::post('/issue-books', [IssueBookController::class, 'store']);
+Route::post('/issue-bulk-books-with-qr', [IssueBookController::class, 'bulkBookIssueWithQR']);
+Route::post('/issue-books-with-qr', [IssueBookController::class, 'singleBookIssueWithQR']);
+Route::post('/issue-books-for-other', [IssueBookController::class, 'issueBookForAnotherUser']);
+
 
 Route::get('/issue-books/list-by-user', [IssueBookController::class, 'listByUser']);
 Route::get('/issue-books/issued-list-by-user', [IssueBookController::class, 'issuedBookListByUser']);

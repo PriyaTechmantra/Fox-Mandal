@@ -21,6 +21,8 @@ class IssueBook extends Model
         'transfer_approve_status',
         'transfer_approve_date',
         'book_holder_user_id',
+        'user_id2',
+        'name_of_issue_person',
         'is_return',
         'return_date'
     ];

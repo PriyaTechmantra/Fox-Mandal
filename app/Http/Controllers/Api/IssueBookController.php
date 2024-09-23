@@ -59,6 +59,145 @@ class IssueBookController extends Controller
         }
 
     }
+    public function bulkBookIssueWithQR(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'qrcode' => 'required|array', 
+            'user_id' => 'required',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'error' => $validator->errors()], 400);
+        }
+    
+        $insertedData = [];
+    
+        try {
+            foreach ($request->qrcode as $qrcode) {
+                $book = Book::where('qrcode', $qrcode)->first();
+    
+                if (!$book) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => "Book with QR code $qrcode not found."
+                    ], 404);
+                }
+    
+                $data = IssueBook::create([
+                    'user_id' => $request->user_id,
+                    'book_id' => $book->id,
+                    'request_date' => now()->toDateString(),
+                ]);
+    
+                $insertedData[] = $data;
+            }
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Books issued successfully.',
+                'data' => $insertedData
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while issuing books.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+
+    public function singleBookIssueWithQR(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'qrcode' => 'required|string', 
+            'user_id' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'error' => $validator->errors()], 400);
+        }
+
+        try {
+            $book = Book::where('qrcode', $request->qrcode)->first();
+
+            if (!$book) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Book with QR code {$request->qrcode} not found."
+                ], 404);
+            }
+
+            $data = IssueBook::create([
+                'user_id' => $request->user_id,
+                'book_id' => $book->id,
+                'request_date' => now()->toDateString(),
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Book issued successfully.',
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while issuing the book.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+    public function issueBookForAnotherUser(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'qrcode' => 'required|string',  
+            'user_id' => 'required|exists:users,id',  
+           // 'book_holder_user_id' => 'required|exists:users,id', 
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'error' => $validator->errors()], 400);
+        }
+    
+        try {
+            $book = Book::where('qrcode', $request->qrcode)->first();
+    
+            if (!$book) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Book with QR code {$request->qrcode} not found."
+                ], 404);
+            }
+    
+            $bookHolder = User::find($request->user_id2);
+    
+            $data = IssueBook::create([
+                'user_id' => $request->user_id,  
+                'book_id' => $book->id,
+                'request_date' => now()->toDateString(),
+                'user_id2' => $bookHolder->id,  
+                'name_of_issue_person' => $request->name_of_issue_person,  
+            ]);
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Book issued successfully to the user.',
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while issuing the book.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+
+
     public function listByUser(Request $request)
     {
   
