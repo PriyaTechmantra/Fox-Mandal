@@ -354,6 +354,66 @@ class IssueBookController extends Controller
         }
     }
     
+    public function transferBookByQr(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'book_id' => 'required',  
+            'from_user_id' => 'required',
+            'to_user_id' => 'required',  
+            'qrcode' => 'required',  
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'error' => $validator->errors()], 400);
+        }
+    
+        $book = Book::where('id', $request->book_id)
+                    ->where('qrcode', $request->qrcode)
+                    ->first();
+
+        
+        if (!$book) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Book not found.',
+            ], 404);
+        }
+
+        
+        $issuebook = IssueBook::where('id', $request->book_id)
+        ->where('user_id', $request->from_user_id)
+        ->first();
+
+        if ( ! $issuebook) {
+            return response()->json([
+                'status' => false,
+                'message' => 'The specified user does not currently hold this book.',
+            ], 403);
+        }
+    
+        $data = BookTransfer::create([
+            'book_id' => $book->id,
+            'from_user_id' => $request->from_user_id,
+            'to_user_id' => $request->to_user_id,
+            'is_transfer' => 1,
+            'transfer_date' => now()->toDateString(),
+        ]);
+    
+        if (!$data) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update book transfer status.',
+            ], 500);
+        }
+    
+        
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Book transfer status updated successfully.',
+            'data' => $data,
+        ], 200);
+    }
     
     
 }

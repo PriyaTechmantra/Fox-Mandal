@@ -12,8 +12,8 @@ return new class extends Migration
     public function up()
     {
         Schema::table('issue_books', function (Blueprint $table) {
-            $table->string('user_id2')->after('book_holder_user_id');// Add the new column after 'book_holder_user_id'
-            $table->string('name_of_issue_person')->after('user_id2'); 
+            $table->string('user_id2')->after('book_holder_user_id')->nullable();
+            $table->string('name_of_issue_person')->after('user_id2')->nullable();
         });
     }
 

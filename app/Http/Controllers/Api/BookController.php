@@ -89,8 +89,15 @@ class BookController extends Controller
                     $query->where('title', 'LIKE', "%{$keyword}%")
                         ->orWhere('publisher', 'LIKE', "%{$keyword}%")
                         ->orWhere('author', 'LIKE', "%{$keyword}%")
-                        ->orWhere('uid', 'LIKE', "%{$keyword}%");
+                        ->orWhere('year', 'LIKE', "%{$keyword}%")
+                        ->orWhere('edition', 'LIKE', "%{$keyword}%")
+                        ->orWhere('uid', 'LIKE', "%{$keyword}%")
+                        ->orWhereHas('office', function ($query) use ($keyword) {
+                            $query->where('address', 'LIKE', "%{$keyword}%");
+                        });
                 });
+
+                
             }
 
             $books = $books->with('category', 'office', 'bookshelve', 'issuebook.user')->get();
