@@ -95,7 +95,7 @@ class AuthController extends Controller
                         ->where('otp', $otp)
                         ->first();
             if ($user) {
-                return response()->json(['status' => true,'message' => 'OTP verified successfully'], 200);
+                return response()->json(['status' => true,'message' => 'OTP verified successfully','data' =>$user], 200);
             }else {
                 return response()->json([
                     'status' => false,
