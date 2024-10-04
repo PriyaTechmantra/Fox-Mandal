@@ -107,11 +107,14 @@ class IssueBookController extends Controller
     }
     
 
+   
+
     public function singleBookIssueWithQR(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'qrcode' => 'required|string', 
             'user_id' => 'required',
+            'book_id' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -128,6 +131,13 @@ class IssueBookController extends Controller
                 ], 404);
             }
 
+            if ($book->id != $request->book_id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "The QR code does not match the provided book ID."
+                ], 400);
+            }
+
             $data = IssueBook::create([
                 'user_id' => $request->user_id,
                 'book_id' => $book->id,
@@ -139,6 +149,7 @@ class IssueBookController extends Controller
                 'message' => 'Book issued successfully.',
                 'data' => $data
             ]);
+
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -147,6 +158,7 @@ class IssueBookController extends Controller
             ], 500);
         }
     }
+
 
 
 
