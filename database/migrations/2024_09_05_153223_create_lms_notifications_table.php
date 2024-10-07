@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('lms_notifications', function (Blueprint $table) {
             $table->id();
 
+            $table->unsignedBigInteger('book_id');
+
             $table->unsignedBigInteger('sender_id');
 
             $table->unsignedBigInteger('receiver_id');

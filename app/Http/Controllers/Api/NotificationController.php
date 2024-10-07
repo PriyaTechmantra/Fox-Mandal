@@ -73,27 +73,35 @@ class NotificationController extends Controller
     }
 
     public function markAsRead(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'id' => 'required|integer|exists:lms_notifications,id',
-    ]);
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer|exists:lms_notifications,id',
+            'receiver_id' => 'required|integer', 
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json(['error' => $validator->errors(),'status' => false], 400);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors(), 'status' => false], 400);
+        }
+
+        $notification = LmsNotification::where('id', $request->id)
+            ->where('receiver_id', $request->receiver_id) 
+            ->first();
+
+        if (!$notification) {
+            return response()->json(['status' => false, 'message' => 'Notification not found or does not belong to the receiver'], 404);
+        }
+
+        $notification->is_read = true;
+        $notification->read_at = now(); 
+        $notification->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Notification marked as read',
+            'data' => $notification
+        ], 200);
     }
 
-    $id = $request->id;
-
-    $notification = LmsNotification::find($id);
-    if (!$notification) {
-        return response()->json(['status'=>false,'message' => 'Notification not found'], 404);
-    }
-
-    $notification->is_read = true;
-    $notification->save();
-
-    return response()->json(['status'=>true,'message' => 'Notification marked as read','data'=>$notification], 200);
-}
 }
 
 

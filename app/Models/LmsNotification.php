@@ -15,6 +15,7 @@ class LmsNotification extends Model
         'message',
         'notification_type',
         'is_read',
+        'read_at',
         'book_id',
     ];
 
