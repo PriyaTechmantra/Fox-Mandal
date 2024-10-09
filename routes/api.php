@@ -63,6 +63,7 @@ Route::post('/issue-books-for-other', [IssueBookController::class, 'issueBookFor
 Route::get('/issue-books/list-by-user', [IssueBookController::class, 'listByUser']);
 Route::get('/issue-books/issued-list-by-user', [IssueBookController::class, 'issuedBookListByUser']);
 Route::get('/issue-books/request-list-by-user', [IssueBookController::class, 'requestedBookListByUser']);
+Route::get('/issue-books/search-by-category', [IssueBookController::class, 'searchByCategory']);
 
 Route::patch('/return-book', [IssueBookController::class, 'returnBook']);
 Route::post('/transfer-book', [BookTransferController::class, 'transferBook']);

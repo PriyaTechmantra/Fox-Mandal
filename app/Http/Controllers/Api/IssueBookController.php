@@ -427,7 +427,55 @@ class IssueBookController extends Controller
         ], 200);
     }
 
-  
     
+    public function searchByCategory(Request $request)
+    {
+    
+
+        $userId = $request->user_id; 
+        $keyword = $request->input('keyword');
+
+        
+        if (empty($keyword)) {
+            $books = IssueBook::where('user_id', $userId)
+                ->with(['book.category', 'user'])
+                ->get();
+            
+            if ($books->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No issued books found.'
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'All issued books retrieved successfully.',
+                'data' => $books
+            ], 200);
+        }
+
+        $books = IssueBook::where('user_id', $userId)
+            ->whereHas('book.category', function ($query) use ($keyword) {
+                $query->where('name', 'LIKE', '%' . $keyword . '%'); 
+            })
+            ->with(['book.category', 'user'])
+            ->get();
+
+        if ($books->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No issued books found for the selected category.'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Books retrieved successfully.',
+            'data' => $books
+        ], 200);
+    }
+
+
     
 }
