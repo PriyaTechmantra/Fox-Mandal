@@ -70,6 +70,8 @@ Route::post('/transfer-book', [BookTransferController::class, 'transferBook']);
 Route::get('/books-shelve/search-by-qrcode', [BookShelveController::class, 'searchByQrCode']);
 Route::post('/bookmark', [BookmarkController::class, 'store']);
 Route::get('/bookmark/list', [BookmarkController::class, 'index']);
+Route::delete('/bookmark/remove', [BookmarkController::class, 'destroy']);
+
 
 Route::get('/books/detail-by-book-shelves-qrcode', [BookController::class, 'showBooksByBookShelveQRCode']);
 Route::get('/books/detail-by-book-shelves', [BookController::class, 'showBooksByBookShelve']);

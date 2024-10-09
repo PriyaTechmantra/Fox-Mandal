@@ -51,4 +51,23 @@ class BookmarkController extends Controller
             ], 500); 
         }
     }
+    public function destroy(Request $request)
+    {
+        $id = $request->id;  
+        $userId = $request->user_id;  
+
+        $bookmark = Bookmark::find($id);
+
+        if (!$bookmark) {
+            return response()->json([ 'status' => false,'message' => 'Bookmark not found'], 404);
+        }
+
+        if ($bookmark->user_id !== $userId) {
+            return response()->json([ 'status' => false,'message' => 'Unauthorized'], 403);
+        }
+
+        $bookmark->delete();
+
+        return response()->json(['status'=>true,'message' => 'Bookmark removed successfully'], 200);
+    }
 }
